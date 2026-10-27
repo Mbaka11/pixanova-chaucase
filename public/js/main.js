@@ -1,5 +1,6 @@
 import { currentPhase, bookingIsOpen } from './events-shared.js';
 import { copy, money } from './i18n.mjs';
+import { initTestimonials } from './testimonials.js';
 const { event: EVENT, platform: PLATFORM, labels: LABELS, language: LANGUAGE } = window.CONFIG;
 const ui = copy(LANGUAGE);
 const fm0 = c => money(c, LANGUAGE);
@@ -247,4 +248,4 @@ window.addEventListener('resize',()=>jUpdate(true));
   ['s-offre','video','comment','offres','pourquoi','montage','preuves','faq','final'].forEach(id=>{ const el=document.getElementById(id); if(el) io.observe(el); });
 })();
 
-renderAll(); route(); loadStock();
+renderAll(); route(); loadStock(); initTestimonials();
