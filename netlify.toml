@@ -1,0 +1,10 @@
+# Site statique (dossier public/) + fonctions serveur Netlify (paiement Stripe).
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Les vidéos et images changent rarement : cache navigateur d'une journée.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

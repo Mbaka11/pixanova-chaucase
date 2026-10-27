@@ -1,0 +1,27 @@
+# Secrets (Stripe, etc.) : jamais dans le dépôt
+.env
+.env.*
+!.env.example
+
+# Fichiers de travail : captures d'écran, scripts jetables, journaux
+/temp/
+
+# Vidéos et médias sources en pleine qualité (trop lourds pour GitHub).
+# Les versions web compressées sont dans public/assets/videos/.
+/media-sources/
+
+# Netlify (CLI locale)
+.netlify/
+
+# Dépendances et builds
+node_modules/
+dist/
+.cache/
+
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log
