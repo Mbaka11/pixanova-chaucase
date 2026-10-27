@@ -1017,12 +1017,13 @@ body.nohome #banner{display:none}
 .stepper button:hover:not(:disabled){background:var(--black);color:#fff}
 .stepper button:disabled{opacity:.3;cursor:not-allowed}
 .stepper b{font-family:var(--h);font-size:20px;min-width:24px;text-align:center}
-.offer.best{overflow:visible}
-.offer.best .badge{top:-13px;right:16px}
+.offer{padding-top:44px}
+.offer .badge{top:14px;left:32px;right:auto;font-size:11px;padding:4px 10px}
 .amp small{display:block;flex-basis:100%}
 .amp small[hidden]{display:none}
 @media (max-width:600px){
   .o-top{min-height:34px}
   .stepper button{width:30px;height:30px;font-size:18px}.stepper b{font-size:17px;min-width:20px}
-  .offer.best .badge{top:-11px;right:12px}
+  .offer{padding-top:34px}
+  .offer .badge{top:10px;left:16px;right:auto;font-size:10px;padding:3px 8px}
 }
