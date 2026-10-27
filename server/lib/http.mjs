@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 export function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers },
   });
 }
 
@@ -14,5 +14,8 @@ export function getStripe() {
 }
 
 export function siteUrl(req) {
-  return (process.env.SITE_URL || new URL(req.url).origin).replace(/\/$/, '');
+  const url = new URL(process.env.SITE_URL || req.url);
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) throw new Error('SITE_URL invalide');
+  if (url.username || url.password) throw new Error('SITE_URL invalide');
+  return url.origin;
 }

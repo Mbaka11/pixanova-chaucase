@@ -1,0 +1,12 @@
+{
+  "name": "Pixanova Events",
+  "defaultLanguage": "fr",
+  "supportedLanguages": ["fr"],
+  "timeZone": "America/Toronto",
+  "currency": "cad",
+  "inventory": { "totalScreens": 20, "holdMinutes": 30 },
+  "contact": { "email": "info@pixanova.ca", "phone": "+1 (438) 491-0384" },
+  "brand": { "logo": "/assets/images/px-crop-sm.png", "website": "https://pixanova.ca/" },
+  "screen": { "valueCents": 700000, "widthCm": 96, "widthPx": 516, "heightPx": 1032 },
+  "analytics": { "ga4": "", "clarity": "", "metaPixel": "" }
+}

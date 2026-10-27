@@ -1,0 +1,29 @@
+{
+  "id": "chaucase-2027",
+  "active": true,
+  "name": "ChauCase",
+  "edition": "2027",
+  "city": "Drummondville",
+  "logo": "/assets/images/chaucase.jpg",
+  "description": "Les écrans LED Pixanova pour les exposants de ChauCase 2027.",
+  "dates": {
+    "startsOn": "2027-02-02",
+    "endsOn": "2027-02-04",
+    "installationOn": "2027-02-01",
+    "rentalStartsAt": "2027-02-01T00:00:00-05:00",
+    "rentalEndsAt": "2027-02-05T00:00:00-05:00",
+    "earlyBirdEndsAt": "2026-12-16T00:00:00-05:00",
+    "bookingClosesAt": null,
+    "refundEndsAt": "2027-01-16T00:00:00-05:00",
+    "artworkDueOn": "2027-01-29"
+  },
+  "pricing": {
+    "early": { "one": 59900, "two": 109500, "perScreen": 53000 },
+    "regular": { "one": 79500, "two": 139500, "perScreen": 65000 }
+  },
+  "maxScreensPerOrder": 10,
+  "media": {
+    "desktopVideo": "/assets/videos/vsl-desktop.mp4",
+    "mobileVideo": "/assets/videos/vsl-mobile.mp4"
+  }
+}

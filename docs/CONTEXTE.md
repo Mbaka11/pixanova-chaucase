@@ -1,71 +1,66 @@
-# Contexte du projet (à lire en premier)
+# Pixanova Events — contexte à jour
 
-Résumé à jour de ce qu'il faut garder en tête. Le plan d'action est dans [PLAN.md](PLAN.md). Les documents d'origine de la personne précédente sont conservés dans [`HANDOFF.md`](HANDOFF.md) et [`GUIDE-LANCEMENT.md`](GUIDE-LANCEMENT.md).
+## Objectif
 
-## Le projet
+Une plateforme réutilisable pour les salons : l’exposant choisit son événement, découvre son offre, puis réserve et paie ses écrans en ligne. Une seule page de vente réutilisable, un serveur commun et un inventaire physique commun de 20 écrans.
 
-- **Pixanova** loue des écrans LED portables pour salons (196 × 96 cm, sur roues, 120 V, contenu par clé USB).
-- Pixanova est le **fournisseur officiel d'écrans LED de ChauCase 2027** : Drummondville, salon du 2 au 4 février 2027, installation le 1er février.
-- **But :** louer **20 écrans maximum** aux exposants à un prix exclusif. L'exposant réserve et paie seul en ligne, sans échange avec l'équipe.
-- Le salon annonce l'offre par courriel et sur chaucase.com, et envoie le trafic vers notre page.
-- Contact : Anis Elourzadi, cofondateur, info@pixanova.ca, +1 (438) 491-0384.
+## Décisions validées
 
-## Prix (avant taxes, en CAD)
+- Nom : **Pixanova Events**; dépôt public `Mbaka11/pixanova-events`.
+- Hébergement : Netlify, site statique et fonctions dans `server/`.
+- Événements gérés par **fichiers de configuration**, sans interface administrateur.
+- Page d’accueil avec sélection du salon, puis modèle commun `evenement.html?event=<id>`.
+- Noms, logos, dates et tarifs alimentés depuis la configuration; conserver les animations, les trois fiches et le compteur 3+.
+- Français par défaut; traduction anglaise reportée.
+- Paiement : session Stripe Checkout calculée côté serveur, pas de douze liens.
+- Montage graphique : achat reporté. La présentation actuelle reste en place; pas de nouvelles options de montage à développer à ce stade.
 
-| Forfait | Early bird (jusqu'au 15 déc. 2026, 23 h 59, heure de Montréal) | Régulier |
+## Inventaire commun selon les dates
+
+Le parc physique comprend **20 écrans**, pas 20 par salon.
+
+- Deux événements simultanés partagent le même parc.
+- Deux événements à des dates différentes peuvent réutiliser les écrans.
+- La période bloquée couvre transport, installation, salon, démontage et retour. Elle peut être plus large que les dates publiques du salon.
+- Disponibilité = parc total moins **pic d’utilisation simultanée** pendant la période concernée, pas somme de toutes les réservations de l’année.
+- Les dates sont figées dans les métadonnées de chaque nouvelle session Stripe. Modifier ensuite le fichier du salon ne doit pas déplacer silencieusement une réservation déjà existante.
+- L’inventaire est configuré dans `config/platform.json`, les périodes et tarifs dans `config/events/*.json`.
+
+**Limite majeure :** les lectures Stripe actuelles permettent le calcul de disponibilité mais ne garantissent pas l’atomicité lors de deux réservations simultanées. Un stockage transactionnel commun reste requis. Les clés réelles sont explicitement refusées par `create-checkout` en attendant cette étape.
+
+## Premier événement : ChauCase 2027
+
+- Drummondville, du 2 au 4 février 2027; installation le 1er février.
+- Fin early bird : 15 décembre 2026 à 23 h 59, heure de Montréal; bascule au tarif régulier le 16 décembre à 00 h 00.
+- Remboursement complet jusqu’au 15 janvier 2027 inclus.
+- Visuels à remettre le 29 janvier 2027.
+- Date de fin des réservations non confirmée : `bookingClosesAt: null`. À défaut, le serveur ferme au début de mise à disposition du matériel.
+- Période de stock **provisoire** : du 1er février à 00 h 00 au 5 février à 00 h 00 (fin exclusive). **À valider avec Anis selon transport et retour réels** avant les ventes.
+
+| Prix avant taxes CAD | Early bird | Régulier |
 |---|---:|---:|
 | 1 écran | 599 $ | 795 $ |
 | 2 écrans | 1 095 $ | 1 395 $ |
-| 3 écrans | 1 590 $ | 1 950 $ |
-| 4 à 10 écrans | 530 $ / écran | 650 $ / écran |
+| 3 écrans ou plus | 530 $ par écran | 650 $ par écran |
 
-- Le prix de 3 écrans est gardé tel quel pour l'instant (il pourra changer).
-- TPS 5 % et TVQ 9,975 % s'ajoutent au paiement.
-- Remboursement complet jusqu'au **15 janvier 2027**.
-- **Jamais plus de 20 écrans au total** (un forfait de 2 en consomme 2).
-- Le numéro de kiosque est demandé au paiement, puis vérifié à la main.
-- Visuels récupérés par courriel après l'achat (516 × 1032 px par écran), date limite le 29 janvier 2027.
+Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975 % ajoutées par Stripe. Numéro de kiosque demandé au paiement puis vérifié manuellement.
 
-## Décisions prises
+## État technique
 
-| Sujet | Décision |
-|---|---|
-| Hébergement | **Netlify** (site statique `public/` + fonctions `server/`) |
-| Paiement | **Stripe Checkout**, une session créée par le serveur à partir du choix du client. Pas de 12 liens de paiement. |
-| Calcul du prix | Toujours côté serveur (le navigateur envoie seulement le nombre d'écrans) |
-| Montage graphique | **En pause** pour l'instant (150 $ simple / 350 $ animé, +100 $ à 2 écrans ou plus) |
-| Dépôt Git | Nouveau dépôt GitHub public, sans secrets |
-| Ancienne plateforme Next.js / Supabase | Abandonnée, gardée dans `docs/archive/` pour référence |
+- Configuration commune validée et générée pour le navigateur; les secrets `.env` ne sont jamais exportés.
+- Modèle événement et accueil testés dans Chrome sur ordinateur et téléphone.
+- Deuxième événement fictif vérifié uniquement dans un test navigateur, non publié.
+- Stripe de test connecté; taxes exclusives TPS/TVQ vérifiées. Session de 1 écran : 599 $ + 89,70 $ = 688,70 $. Session expirée sans paiement.
+- Le stock partagé passe de 20 à 19 pendant ce test puis revient à 20 après expiration.
+- Webhook non configuré localement; clé de signature absente. Notifications Resend facultatives, déduplication durable encore à faire.
+- Aucun achat réel; boutons de paiement non branchés. Page « Merci » historique à sécuriser par vérification serveur.
 
-## Organisation du dossier
+## À confirmer avant production
 
-```text
-public/                 Ce qui est mis en ligne
-  index.html            Structure de la page de vente
-  css/styles.css        Tout le style
-  js/config.js          Réglages modifiables (stock, date early bird, statistiques)
-  js/main.js            Comportement de la page
-  assets/               Images, logos, vidéos compressées pour le web
-server/      Code serveur : paiement Stripe, stock, webhook
-docs/                   Documentation
-  archive/              Ancienne maquette et ancien plan de plateforme
-media-sources/          Vidéos originales en pleine qualité (non versionnées)
-temp/                   Fichiers de travail, captures d'écran (non versionnés)
-netlify.toml            Configuration Netlify
-.env.example            Variables d'environnement attendues
-```
+1. Périodes réelles de transport/retour et fermeture des ventes par événement.
+2. Stock transactionnel et stratégie de reprise après échec Stripe.
+3. Moyens de paiement activés dans Stripe et traitement des paiements différés/échoués.
+4. Valeur commerciale de 7 000 $ par écran et besoins électriques : les valeurs de 4+ écrans restent des extrapolations non validées.
+5. Conditions, confidentialité, reçus et notifications automatiques.
 
-## Prochaines étapes
-
-1. Fonction `create-checkout` : prix selon la date, stock, TPS/TVQ, champs kiosque et entreprise, retour vers la page « Merci ».
-2. Remplacer les boutons de forfaits par un sélecteur de nombre d'écrans qui appelle cette fonction.
-3. Stock côté serveur : compter les écrans payés et en cours de paiement dans Stripe, refuser au-delà de 20.
-4. Webhook `checkout.session.completed` : avertir l'équipe.
-5. Identifiants de statistiques dans `public/js/config.js`.
-6. Essais en mode test Stripe (carte `4242 4242 4242 4242`), puis en réel.
-
-## Points d'attention
-
-- Aucune clé secrète dans `public/` ni dans le dépôt : seulement dans `.env` (local) et dans Netlify.
-- La bascule early bird → régulier se fait à l'heure de Montréal (`America/Toronto`).
-- Deux paiements simultanés sur les derniers écrans : à gérer côté serveur.
+Les anciens documents sont conservés pour historique. Le plan actuel est [PLAN.md](PLAN.md); la procédure d’ajout d’un salon est [EVENEMENTS.md](EVENEMENTS.md).

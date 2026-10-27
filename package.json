@@ -1,17 +1,22 @@
 {
-  "name": "pixanova-chaucase",
+  "name": "pixanova-events",
   "version": "0.1.0",
   "private": true,
-  "description": "Page de vente des écrans LED Pixanova pour ChauCase 2027",
+  "description": "Pixanova Events : location d’écrans LED par événement, avec inventaire partagé selon les dates",
   "scripts": {
-    "dev": "browser-sync start --server public --files \"public/**/*\" --port 8080 --no-notify --no-open --no-ui",
-    "dev:full": "netlify dev --dir public --functions server",
-    "test": "node --test test/*.test.mjs"
+    "dev": "node scripts/dev.mjs",
+    "dev:full": "netlify dev",
+    "test": "node --test test/*.test.mjs",
+    "build": "node scripts/build-config.mjs",
+    "pretest": "npm run build"
   },
   "devDependencies": {
     "browser-sync": "^3.0.4"
   },
   "dependencies": {
     "stripe": "^23.0.1"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

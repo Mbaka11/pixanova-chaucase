@@ -10,6 +10,10 @@
 # Les versions web compressées sont dans public/assets/videos/.
 /media-sources/
 
+# Configuration publique générée par npm run build / npm run dev
+/public/js/catalog-data.js
+/public/js/events-shared.js
+
 # Netlify (CLI locale)
 .netlify/
 

@@ -1,12 +1,18 @@
+import { currentPhase, bookingIsOpen } from './events-shared.js';
+const { event: EVENT, platform: PLATFORM, labels: LABELS } = window.CONFIG;
 const fm0 = c => (c/100).toLocaleString('fr-CA',{maximumFractionDigits:0}).replace(/[  ]/g,' ')+' $';
 /* Prix en cents, avant taxes. 3 écrans et plus : quantité × tarif par écran (mêmes règles que le serveur). */
-const P = {1:{early:59900,reg:79500}, 2:{early:109500,reg:139500}};
-const PER = {early:53000, reg:65000};
-const MAX_SCREENS = 10, SCREEN_VALUE = 700000, SCREEN_W = 96, SCREEN_PX = 516;
+const P = {
+  1:{early:EVENT.pricing.early.one,reg:EVENT.pricing.regular.one},
+  2:{early:EVENT.pricing.early.two,reg:EVENT.pricing.regular.two},
+};
+const PER = {early:EVENT.pricing.early.perScreen, reg:EVENT.pricing.regular.perScreen};
+const MAX_SCREENS = EVENT.maxScreensPerOrder;
+const { valueCents: SCREEN_VALUE, widthCm: SCREEN_W, widthPx: SCREEN_PX, heightPx: SCREEN_HEIGHT } = PLATFORM.screen;
 const priceFor = (n,ph) => n<=2 ? P[n][ph] : n*PER[ph];
 const o3 = {n:3};
-const phaseNow = () => Date.now() > Date.parse(CONFIG.earlyDeadline) ? 'reg' : 'early';
-const S = {stock: Math.max(0, CONFIG.total-CONFIG.reserved), phase: phaseNow()};
+const phaseNow = () => currentPhase(EVENT)==='regular' ? 'reg' : 'early';
+const S = {stock: null, phase: phaseNow(), open: bookingIsOpen(EVENT)};
 const payUrl = k => (CONFIG.links[S.phase==='early'?'early':'regular']||{})[k] || '';
 
 /* ---------- Statistiques (avec consentement) ---------- */
@@ -26,7 +32,7 @@ function sendEvt(n,p){
   if(A.clarity&&window.clarity) clarity('event',n);
   if(A.metaPixel&&window.fbq){ const m={begin_checkout:'InitiateCheckout',purchase:'Purchase'}[n]; if(m) fbq('track',m); else fbq('trackCustom',n,p||{}); }
 }
-function track(n,p){ if(!anyA||consent!=='yes') return; aReady?sendEvt(n,p):aQueue.push([n,p]); }
+function track(n,p){ if(!anyA||consent!=='yes') return; const detail={event:EVENT.id,...p}; aReady?sendEvt(n,detail):aQueue.push([n,detail]); }
 (function(){
   if(!anyA) return;
   const box=document.getElementById('consent');
@@ -48,7 +54,7 @@ function route(){
   document.body.classList.toggle('nohome',target!=='/');
   routes.forEach(r=>r.hidden=r.dataset.route!==target);
   if(h.startsWith('#/')||target!=='/') window.scrollTo(0,0);
-  if(target==='/merci' && !window.__purchased){ window.__purchased=1; track('purchase',{}); }
+  // Un simple lien « merci » n'est pas une preuve de paiement. Vérification serveur à ajouter.
   updateSticky();
 }
 window.addEventListener('hashchange',route);
@@ -62,10 +68,12 @@ function renderOffers(left, early){
     document.querySelector('[data-p="'+n+'"]').textContent = fm0(now);
     const w = document.querySelector('[data-w="'+n+'"]'); w.textContent = fm0(was); w.style.display = early ? '' : 'none';
     const sv = document.querySelector('[data-s="'+n+'"]'); sv.style.display = early ? '' : 'none';
-    sv.textContent = 'Économisez '+fm0(save)+' avant le 15 décembre';
+    sv.textContent = 'Économisez '+fm0(save)+' avant le '+LABELS.earlyDeadline;
     const bt = document.querySelector('[data-b="'+n+'"]');
     bt.dataset.pack = count;
-    if(left >= count){ bt.textContent = count===1 ? 'Réserver 1 écran' : 'Réserver '+count+' écrans'; bt.setAttribute('href', payUrl(count)||'#'); }
+    bt.setAttribute('aria-disabled', String(!S.open));
+    if(!S.open){ bt.textContent='Réservations fermées'; bt.setAttribute('href','#'); }
+    else if(left >= count){ bt.textContent = count===1 ? 'Réserver 1 écran' : 'Réserver '+count+' écrans'; bt.setAttribute('href', payUrl(count)||'#'); }
     else { bt.textContent = left===0 ? "Liste d'attente" : 'Seulement '+left+' restant'+(left>1?'s':'')+" : liste d'attente"; bt.setAttribute('href','#/liste-attente'); }
   };
   card(1, 1); card(2, 2);
@@ -82,7 +90,7 @@ function renderOffers(left, early){
   document.getElementById('o3Step').style.display = left < 3 ? 'none' : '';
   document.getElementById('o3Value').innerHTML = 'Valeur des '+(WORDS[n]||n).toLowerCase()+' écrans : <b>'+fm0(n*SCREEN_VALUE)+'</b>';
   document.getElementById('o3Width').textContent = (WORDS[n]||n)+' écrans côte à côte : '+cm+' cm'+(n===3?', tout le mur du kiosque':'');
-  document.getElementById('o3Visual').textContent = 'Un visuel panoramique de '+(n*SCREEN_PX)+' x 1032 px, ou '+(WORDS[n]||n).toLowerCase()+' messages';
+  document.getElementById('o3Visual').textContent = 'Un visuel panoramique de '+(n*SCREEN_PX)+' x '+SCREEN_HEIGHT+' px, ou '+(WORDS[n]||n).toLowerCase()+' messages';
   // Intensité : 17 à 20 A pour 3 écrans, proportionnel au-delà (à confirmer avec Anis)
   const lo = Math.ceil(n*17/3), hi = Math.ceil(n*20/3);
   document.getElementById('o3Amp').textContent = '120 V · '+lo+' à '+hi+' A';
@@ -96,44 +104,53 @@ document.getElementById('o3Plus').addEventListener('click',()=>{ o3.n++; renderA
 /* ---------- Prix, compteur, boutons ---------- */
 function renderAll(){
   S.phase=phaseNow();
-  const early=S.phase==='early', left=S.stock;
+  S.open=bookingIsOpen(EVENT);
+  const early=S.phase==='early', left=S.stock ?? CONFIG.total;
   const b=document.getElementById('banner');
   b.className='banner'+(early?'':' over');
   const dl=Math.max(1,Math.ceil((Date.parse(CONFIG.earlyDeadline)-Date.now())/864e5));
   b.innerHTML = early
-   ? 'Early bird : '+(dl>1?'plus que <b>'+dl+' jours</b>':'<b>dernier jour</b>')+' <span class="hm">pour profiter de</span><span class="dm">·</span> <b>599 $</b> <s>795 $</s><span class="hm"> par écran</span>'
-   : 'La période early bird est terminée. Prix régulier : <b>795 $ par écran</b>.';
+   ? 'Early bird : '+(dl>1?'plus que <b>'+dl+' jours</b>':'<b>dernier jour</b>')+' <span class="hm">pour profiter de</span><span class="dm">·</span> <b>'+fm0(P[1].early)+'</b> <s>'+fm0(P[1].reg)+'</s><span class="hm"> par écran</span>'
+   : 'La période early bird est terminée. Prix régulier : <b>'+fm0(P[1].reg)+' par écran</b>.';
+  if(!S.open) b.textContent='Les réservations sont fermées pour '+LABELS.fullName+'.';
   renderOffers(left, early);
   document.querySelector('[data-big]').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
-  document.querySelector('[data-punch]').innerHTML='Pour <em>'+fm0(P[1][S.phase]-35000)+' de plus</em>, passez d\'un message figé à un écran de 7 000 $ de valeur, en boucle, pendant 3 jours.';
+  document.querySelector('[data-punch]').innerHTML='Pour <em>'+fm0(P[1][S.phase]-35000)+' de plus</em>, passez d\'un message figé à un écran de '+fm0(SCREEN_VALUE)+' de valeur, en boucle, pendant '+LABELS.durationDays+' jours.';
   document.getElementById('pbNow').textContent=fm0(P[1][S.phase]);
   const pw=document.getElementById('pbWas'), ps=document.getElementById('pbSave');
   pw.style.display=ps.style.display=early?'':'none';
   pw.textContent=fm0(P[1].reg); ps.textContent='Économisez '+fm0(P[1].reg-P[1].early);
   document.getElementById('pbTag').textContent=early?'Prix early bird':'Prix régulier';
-  document.getElementById('left').textContent=left;
+  document.getElementById('left').textContent=S.stock === null ? '—' : left;
+  document.querySelector('#counter .live').lastChild.textContent=S.stock === null ? ' Disponibilité' : ' En direct';
   const sg=document.getElementById('segs'); if(!sg.children.length){ for(let i=0;i<CONFIG.total;i++) sg.appendChild(document.createElement('i')); }
+  sg.hidden=S.stock===null;
   [...sg.children].forEach((e,i)=>{ e.className=i<left?'on'+(i===left-1?' last':''):'off'; });
   document.getElementById('counter').classList.toggle('low',left<=5);
-  document.getElementById('counterNote').textContent=left===0?'Tous les écrans sont réservés. Inscrivez-vous à la liste d\'attente.':left<=5?'Presque complet. Ne tardez pas.':'';
+  document.getElementById('counterNote').textContent=S.stock===null?'Disponibilité à confirmer pour les dates de ce salon.':left===0?'Tous les écrans sont réservés. Inscrivez-vous à la liste d\'attente.':left<=5?'Presque complet. Ne tardez pas.':'';
   document.querySelectorAll('[data-cta]').forEach(a=>{
     if(!a.dataset.t) a.dataset.t=a.textContent;
-    if(left===0){ a.textContent='Rejoindre la liste d\'attente'; a.setAttribute('href','#/liste-attente'); }
+    if(!S.open){ a.textContent='Réservations fermées'; a.setAttribute('href','#offres'); }
+    else if(left===0){ a.textContent='Rejoindre la liste d\'attente'; a.setAttribute('href','#/liste-attente'); }
     else { a.textContent=a.dataset.t; a.setAttribute('href','#offres'); }
   });
-  document.querySelector('[data-final]').textContent=(early?'Prix early bird jusqu\'au 15 décembre. ':'')+(left===0?'Tous les écrans sont réservés.':'Il reste '+left+' écran'+(left>1?'s':'')+'.');
+  document.querySelector('[data-final]').textContent=!S.open?'Réservations fermées pour cet événement.':(early?'Prix early bird jusqu’au '+LABELS.earlyDeadline+'. ':'')+(S.stock===null?'Disponibilité selon les dates de votre salon.':left===0?'Tous les écrans sont réservés.':'Il reste '+left+' écran'+(left>1?'s':'')+'.');
   document.getElementById('stkP').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
-  document.getElementById('stkL').textContent=left===0?'Complet':left+' écran'+(left>1?'s':'')+' restant'+(left>1?'s':'');
+  document.getElementById('stkL').textContent=!S.open?'Réservations fermées':S.stock===null?'Stock à confirmer':left===0?'Complet':left+' écran'+(left>1?'s':'')+' restant'+(left>1?'s':'');
   document.querySelectorAll('[data-mlink]').forEach(a=>a.setAttribute('href',(CONFIG.links.montage||{})[a.dataset.mlink]||'#'));
   const wl=document.getElementById('wlMail');
-  if(wl) wl.setAttribute('href','mailto:'+CONFIG.waitlistEmail+'?subject='+encodeURIComponent('Liste d\'attente ChauCase 2027')+'&body='+encodeURIComponent('Bonjour,\n\nNuméro de kiosque :\nEntreprise :\nNombre d\'écrans souhaité :\n'));
+  if(wl) wl.setAttribute('href','mailto:'+CONFIG.waitlistEmail+'?subject='+encodeURIComponent('Liste d’attente '+LABELS.fullName)+'&body='+encodeURIComponent('Bonjour,\n\nNuméro de kiosque :\nEntreprise :\nNombre d\'écrans souhaité :\n'));
 }
 document.querySelectorAll('[data-cta]').forEach(a=>a.dataset.t=a.textContent);
 
-/* Stock : lecture optionnelle d'un Google Sheets publié */
+/* Un inventaire partagé, interrogé pour les dates de l’événement choisi. */
 async function loadStock(){
-  if(!CONFIG.stockSheetUrl) return;
-  try{ const r=await fetch(CONFIG.stockSheetUrl,{cache:'no-store'}); const n=parseInt((await r.text()).replace(/[^0-9]/g,''),10); if(!isNaN(n)){ S.stock=Math.max(0,CONFIG.total-n); renderAll(); } }catch(e){}
+  try {
+    const r=await fetch('/api/stock?event='+encodeURIComponent(EVENT.id),{cache:'no-store'});
+    if(!r.ok) return;
+    const data=await r.json();
+    if(data.eventId===EVENT.id && Number.isInteger(data.remaining) && data.remaining>=0 && data.remaining<=CONFIG.total){ S.stock=data.remaining; renderAll(); }
+  } catch { /* Aperçu statique : ne jamais inventer un stock disponible. */ }
 }
 
 /* Clics : paiement et boutons principaux */
@@ -141,7 +158,8 @@ document.addEventListener('click',e=>{
   const a=e.target.closest('a[data-pack],a[data-mlink]');
   if(a){
     const href=a.getAttribute('href');
-    if(!href||href==='#'){ e.preventDefault(); alert('Lien de paiement non configuré. Voir CONFIG au début du script de index.html (GUIDE-LANCEMENT.md).'); return; }
+    if(a.getAttribute('aria-disabled')==='true'){e.preventDefault();return;}
+    if(!href||href==='#'){ e.preventDefault(); alert('Le paiement sera activé après la validation du serveur de réservation.'); return; }
     if(/^https?:/.test(href)) track('begin_checkout',{pack:a.dataset.pack||a.dataset.mlink,phase:S.phase});
     return;
   }
@@ -151,7 +169,7 @@ document.addEventListener('click',e=>{
 /* Compte à rebours en direct jusqu'à la fin de l'early bird */
 function tick(){
   const el=document.getElementById('skCd'); if(!el) return;
-  if(phaseNow()!==S.phase) renderAll();
+  if(phaseNow()!==S.phase || bookingIsOpen(EVENT)!==S.open) renderAll();
   const ms=Date.parse(CONFIG.earlyDeadline)-Date.now();
   const wrap=el.closest('.sk-cd');
   if(ms<=0){ wrap.style.visibility='hidden'; return; }
@@ -180,6 +198,7 @@ const JS=[['s-offre','L\'offre'],['comment','Le principe'],['offres','Les prix']
 let jCurIdx=-1;
 function jGo(i){ const el=document.getElementById(JS[i][0]); if(!el) return; closeJ();
   if(i===0) window.scrollTo({top:0,behavior:'smooth'}); else el.scrollIntoView({behavior:'smooth',block:'start'}); }
+window.jGo=jGo;
 function closeJ(){ document.getElementById('jny').classList.remove('open'); document.getElementById('jb').setAttribute('aria-expanded','false'); }
 function jUpdate(force){
   const hh=document.querySelector('header.top').offsetHeight;
@@ -208,7 +227,7 @@ window.addEventListener('resize',()=>jUpdate(true));
 (function(){
   const v=document.getElementById('vsl'), b=document.getElementById('vslSound'); if(!v) return;
   const mq=window.matchMedia('(max-width:600px)');
-  const setSrc=()=>{ const want=mq.matches?'assets/videos/vsl-mobile.mp4#t=0.1':'assets/videos/vsl-desktop.mp4#t=0.1'; if(v.dataset.src!==want){ v.dataset.src=want; v.src=want; } };
+  const setSrc=()=>{ const want=(mq.matches?EVENT.media.mobileVideo:EVENT.media.desktopVideo)+'#t=0.1'; if(v.dataset.src!==want){ v.dataset.src=want; v.src=want; } };
   setSrc(); (mq.addEventListener?mq.addEventListener('change',setSrc):mq.addListener(setSrc));
   b.onclick=()=>{ v.muted=false; v.volume=1; b.hidden=true; v.play().catch(()=>{}); track('video_unmute'); };
   v.addEventListener('volumechange',()=>{ b.hidden=!v.muted; });

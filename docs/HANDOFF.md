@@ -1,6 +1,6 @@
 # Pixanova x ChauCase 2027 : transfert du projet
 
-> **Note (octobre 2026) :** document d'origine de la personne précédente, gardé tel quel. Les décisions à jour et la nouvelle organisation des fichiers sont dans [CONTEXTE.md](CONTEXTE.md). `index.html` est maintenant dans `public/`, et `CONFIG` dans `public/js/config.js`.
+> **Historique :** transfert monoévénement d’origine. Le projet est devenu **Pixanova Events** : accueil commun, modèle `public/evenement.html` et fichiers `config/events/*.json`. Les décisions actuelles sont dans [CONTEXTE.md](CONTEXTE.md) et [PLAN.md](PLAN.md). Les anciennes promesses de stock fondées uniquement sur Stripe ne constituent pas une garantie anti-survente.
 
 ## Contexte (30 secondes)
 - **Pixanova** (Montréal) loue et vend des écrans LED portables pour salons : 196 x 96 cm, sur roues, branchés sur 120 V, contenu par clé USB.

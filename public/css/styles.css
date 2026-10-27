@@ -1,3 +1,7 @@
+.event-loading body{visibility:hidden}
+.event-back{color:#dbe6ff;font-size:13px;white-space:nowrap;margin-left:auto}
+.event-dates{color:#9fb4d9;font-size:14px;margin:0 0 18px}
+@media(max-width:600px){.event-back{font-size:11px}.event-dates{font-size:12px}}
 :root{
   --black:#0A1A33; --ink:#0F1E36; --blue:#2563EB; --blue-d:#1D4FC4; --sky:#6EA8FF; --paper:#F2F5FA; --white:#fff;
   --line:#D3DBE8; --muted:#55627A; --ok:#1E7A4C; --err:#B3261E;

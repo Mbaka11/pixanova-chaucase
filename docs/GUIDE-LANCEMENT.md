@@ -1,6 +1,6 @@
 # Guide de lancement : page de vente + liens de paiement Stripe
 
-> **Note (octobre 2026) :** ce guide décrit l'approche par 12 liens de paiement, **remplacée** par un Stripe Checkout créé côté serveur (voir [CONTEXTE.md](CONTEXTE.md)). Les sections sur les champs Stripe, les essais, le courriel des visuels et les remboursements restent utiles.
+> **Historique :** ce guide monoévénement décrit les 12 liens Stripe, approche remplacée par Pixanova Events et un Checkout serveur commun. Suivre [CONTEXTE.md](CONTEXTE.md), [PLAN.md](PLAN.md) et [EVENEMENTS.md](EVENEMENTS.md) pour la configuration actuelle. Les anciennes procédures de stock manuel ne conviennent pas au parc partagé.
 
 Fichier à publier : **`index.html`** (avec le dossier `assets`).
 `maquette.html` est l'ancienne maquette, à garder pour référence seulement.

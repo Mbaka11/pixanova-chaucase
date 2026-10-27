@@ -1,78 +1,82 @@
-import { EVENT_ID, HOLD_MINUTES, MAX_PER_ORDER, TOTAL_SCREENS } from './lib/config.mjs';
+import { getEvent, catalog, INVENTORY_POOL, HOLD_MINUTES, TOTAL_SCREENS } from './lib/config.mjs';
 import { getStripe, json, siteUrl } from './lib/http.mjs';
-import { computePrice, isValidScreens } from './lib/pricing.mjs';
+import { computePrice, isValidScreens, bookingIsOpen } from './lib/pricing.mjs';
 import { countTakenScreens } from './lib/stock.mjs';
+import { eventLabels } from '../shared/events.mjs';
 
-export const makeHandler = (stripeFactory = getStripe) => async (req) => {
-  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async (req) => {
+  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, { Allow: 'POST' });
+  let body;
+  try { body = await req.json(); } catch { return json({ error: 'invalid_body' }, 400); }
+  const event = getEvent(body?.eventId);
+  if (!event?.active) return json({ error: 'event_not_found' }, 404);
+  if (!bookingIsOpen(event, now())) return json({ error: 'booking_closed' }, 409);
+  const screens = body?.screens;
+  if (!isValidScreens(event, screens)) return json({ error: 'invalid_screens', max: event.maxScreensPerOrder }, 400);
 
-  let screens;
-  try { ({ screens } = await req.json()); } catch { return json({ error: 'invalid_body' }, 400); }
-  screens = Number(screens);
-  if (!isValidScreens(screens)) return json({ error: 'invalid_screens', max: MAX_PER_ORDER }, 400);
+  // Les lectures Stripe ne constituent PAS un verrou de stock. Blocage des clés réelles
+  // jusqu’à l’ajout d’un inventaire transactionnel partagé (aucun bouton de contournement).
+  if (process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_') || process.env.STRIPE_SECRET_KEY?.startsWith('rk_live_')) {
+    return json({ error: 'production_inventory_not_ready' }, 503);
+  }
+  const taxRates = [process.env.STRIPE_TAX_RATE_TPS, process.env.STRIPE_TAX_RATE_TVQ];
+  if (!taxRates.every((id) => typeof id === 'string' && id.startsWith('txr_')) || taxRates[0] === taxRates[1]) return json({ error: 'tax_rates_not_configured' }, 503);
 
-  const taxRates = [process.env.STRIPE_TAX_RATE_TPS, process.env.STRIPE_TAX_RATE_TVQ].filter(Boolean);
-  if (taxRates.length !== 2) return json({ error: 'tax_rates_not_configured' }, 500);
-
+  let session;
+  let stripe;
   try {
-    const stripe = stripeFactory();
-
-    // 1. Il doit rester assez d'écrans.
-    const takenBefore = await countTakenScreens(stripe);
-    if (takenBefore + screens > TOTAL_SCREENS) {
-      return json({ error: 'not_enough_stock', remaining: Math.max(0, TOTAL_SCREENS - takenBefore) }, 409);
-    }
-
-    // 2. Le prix est calculé ici, jamais par le navigateur.
-    const price = computePrice(screens);
-    const base = siteUrl(req);
-    const label = price.phase === 'early' ? 'prix early bird' : 'prix régulier';
-    const lineItem = screens >= 3
-      ? { quantity: screens, unit: price.unitCents, name: 'Écran LED ChauCase 2027' }
-      : { quantity: 1, unit: price.totalCents, name: `Écran LED ChauCase 2027 (${screens} écran${screens > 1 ? 's' : ''})` };
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      locale: 'fr-CA',
+    stripe = stripeFactory();
+    const takenBefore = await countTakenScreens(stripe, event, now());
+    if (takenBefore + screens > TOTAL_SCREENS) return json({ error: 'not_enough_stock', remaining: Math.max(0, TOTAL_SCREENS - takenBefore) }, 409);
+    const price = computePrice(event, screens, now());
+    const labels = eventLabels(event, catalog.platform);
+    const page = `${siteUrl(req)}/evenement.html?event=${encodeURIComponent(event.id)}`;
+    const metadata = {
+      inventory_pool: INVENTORY_POOL, event: event.id, event_name: labels.fullName,
+      screens: String(screens), phase: price.phase,
+      rental_start: event.dates.rentalStartsAt, rental_end: event.dates.rentalEndsAt,
+    };
+    session = await stripe.checkout.sessions.create({
+      mode: 'payment', locale: 'fr-CA', // Moyens de paiement configurés dans Stripe Dashboard.
       line_items: [{
-        quantity: lineItem.quantity,
+        quantity: screens >= 3 ? screens : 1,
         tax_rates: taxRates,
         price_data: {
-          currency: 'cad',
-          unit_amount: lineItem.unit,
+          currency: catalog.platform.currency,
+          unit_amount: screens >= 3 ? price.unitCents : price.totalCents,
           product_data: {
-            name: lineItem.name,
-            description: `Location pour les 3 jours du salon, ${label}. Livraison, installation et désinstallation incluses.`,
+            name: `Écran LED ${labels.fullName}${screens < 3 ? ` (${screens} écran${screens > 1 ? 's' : ''})` : ''}`,
+            description: `Location ${labels.period}. Prix ${price.phase === 'early' ? 'early bird' : 'régulier'}. Livraison, installation et désinstallation incluses.`,
           },
         },
       }],
       billing_address_collection: 'required',
       phone_number_collection: { enabled: true },
       custom_fields: [
-        { key: 'kiosque', label: { type: 'custom', custom: 'Numéro de kiosque ChauCase' }, type: 'text' },
+        { key: 'kiosque', label: { type: 'custom', custom: 'Numéro de kiosque' }, type: 'text' },
         { key: 'entreprise', label: { type: 'custom', custom: "Nom de l'entreprise" }, type: 'text' },
       ],
       expires_at: Math.floor(Date.now() / 1000) + HOLD_MINUTES * 60,
-      metadata: { event: EVENT_ID, screens: String(screens), phase: price.phase },
-      payment_intent_data: { metadata: { event: EVENT_ID, screens: String(screens) } },
-      success_url: `${base}/?merci=1&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/#offres`,
+      metadata, payment_intent_data: { metadata },
+      success_url: `${page}&merci=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${page}#offres`,
     });
 
-    // 3. Deuxième vérification : deux achats simultanés ne doivent pas dépasser le total.
-    const takenAfter = await countTakenScreens(stripe);
+    // Contrôle supplémentaire utile en test, mais PAS une garantie anti-survente.
+    const takenAfter = await countTakenScreens(stripe, event, now());
     if (takenAfter > TOTAL_SCREENS) {
       await stripe.checkout.sessions.expire(session.id);
-      return json({ error: 'not_enough_stock', remaining: Math.max(0, TOTAL_SCREENS - (takenAfter - screens)) }, 409);
+      session = null;
+      return json({ error: 'not_enough_stock', remaining: 0 }, 409);
     }
-
-    return json({ url: session.url, sessionId: session.id, phase: price.phase, totalCents: price.totalCents });
+    return json({ url: session.url, sessionId: session.id, eventId: event.id, phase: price.phase, totalCents: price.totalCents });
   } catch (err) {
-    console.error('create-checkout', err);
-    return json({ error: 'checkout_failed' }, 500);
+    if (session) {
+      try { await stripe.checkout.sessions.expire(session.id); } catch { console.error('Nettoyage session de test échoué'); }
+    }
+    console.error('create-checkout', err.message);
+    return json({ error: 'checkout_failed' }, 503);
   }
 };
-
 export default makeHandler();
-
 export const config = { path: '/api/checkout' };

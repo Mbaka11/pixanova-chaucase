@@ -1,94 +1,63 @@
-# Plan de travail
+# Pixanova Events — plan actuel
 
-Voir [CONTEXTE.md](CONTEXTE.md) pour les prix et les décisions. Ce plan se suit dans l'ordre. Cocher au fur et à mesure.
+Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 
-## Analyse de la page actuelle (octobre 2026)
+## 1. Base multiévénement
 
-**Constat : la page de vente est complète. Ce qui manque, ce n'est pas du contenu, c'est la réservation elle-même.**
+- [x] Nom Pixanova Events et dépôt public `pixanova-events`.
+- [x] Configuration commune du parc physique et des coordonnées.
+- [x] Fichiers par événement : identité, logo, dates, prix, médias, maximum par commande.
+- [x] Validation des configurations; même source pour la page et le serveur.
+- [x] Accueil de sélection des événements.
+- [x] Modèle commun conservant le design, les animations et les trois fiches.
+- [x] Compteur de 3 à 10 écrans et alignement des prix préservés.
+- [x] Dates et noms dynamiques dans les textes, FAQ, échéances et retours Stripe.
+- [x] Français par défaut; anglais reporté.
 
-Parcours actuel : bandeau early bird → hero (titre, prix, stock, animation) → vidéo → comment ça marche (3 étapes) → 3 offres → affiche vs écran → montage graphique → preuves (logos, photos, témoignages) → FAQ (10 questions) → appel final → pied de page. Environ 6 000 px de hauteur sur téléphone.
+## 2. Disponibilité globale selon le calendrier
 
-### Ce qui fonctionne bien
+- [x] Un inventaire commun de 20, pas un quota de 20 par événement.
+- [x] Pic de consommation sur la période de location (transport, installation, retour compris).
+- [x] Même stock partagé entre salons qui se chevauchent; réutilisation possible à des dates différentes.
+- [x] Périodes figées dans les nouvelles sessions Stripe; compatibilité des anciennes sessions ChauCase.
+- [x] Afficher « Stock à confirmer » si le serveur n’est pas joignable, sans annoncer de fausse disponibilité.
+- [ ] **Ajouter une réservation atomique dans un stockage partagé** : aucun contrôle par lectures Stripe seules ne garantit l’absence de survente.
+- [ ] Gérer création Stripe échouée, expiration, paiement, remboursement et reprise de webhook avec états idempotents.
+- [ ] Protection contre les doubles clics et abus de réservation temporaire.
 
-- Message clair dès le haut : rareté (20 écrans), prix, « livré et installé ».
-- Le stock restant, le décompte et la barre collante en bas gardent l'urgence visible.
-- Les boutons « Réserver » reviennent à chaque section.
-- Les preuves (logos, témoignages vidéo, 5,0 sur Google) sont solides.
-- Le style est cohérent avec l'image Pixanova.
+**Blocage de sécurité :** le serveur refuse actuellement les clés Stripe réelles. Ne pas retirer ce blocage tant que le stock transactionnel n’est pas testé avec plusieurs acheteurs simultanés.
 
-### Ce qui manque vraiment
+## 3. Paiement et confirmation
 
-1. **Le panier et le paiement.** Aujourd'hui, les boutons « Réserver » n'envoient nulle part (liens Stripe vides).
-2. **Un seul endroit pour choisir.** Les 3 cartes (1, 2, 3 écrans) cachent la 3ᵉ sur téléphone et le « plus de 3 » est un petit lien. Il faut un choix unique avec le total qui se met à jour.
-3. **Le stock réel.** Il est modifié à la main (`reserved`), sans protection contre deux achats simultanés.
-4. **Une page légale minimale** : conditions de remboursement et confidentialité (la page utilise des statistiques avec consentement, loi 25).
-5. **Finitions** : icône du site, image de partage (aperçu dans les courriels et réseaux), identifiants de statistiques.
+- [x] Clé de test, TPS 5 % et TVQ 9,975 % exclusives vérifiées via Stripe.
+- [x] Session de test créée avec événement et dates, 688,70 $ pour un écran; expirée sans paiement.
+- [x] Retour Stripe conserve l’événement choisi.
+- [x] Gestion des moyens de paiement compatible avec l’API Stripe actuelle (configuration Dashboard).
+- [ ] Brancher les boutons existants à `/api/checkout` sans remplacer les fiches.
+- [ ] Configurer le webhook signé localement puis sur Netlify.
+- [ ] Page « Merci » : vérifier côté serveur que la session correspond à l’événement et est payée. Le paramètre `merci=1` n’est pas une preuve de paiement.
+- [ ] Afficher récapitulatif et référence de réservation.
+- [ ] Courriels client/équipe fiables et déduplication persistante des événements Stripe.
+- [ ] Tests complets : carte acceptée/refusée, abandon, stock concurrent, paiements différés, remboursements et événements en chevauchement.
 
-### Ce qui est en trop (pour une lecture rapide)
+## 4. Validation métier et mise en ligne
 
-| Élément | Problème | Proposition |
-|---|---|---|
-| Section « Montage graphique » | Le montage est en pause, mais la section et le bloc de la page « Merci » sont affichés | Masquer pour l'instant |
-| FAQ à 10 questions | Longue, plusieurs réponses sont déjà dites plus haut | Garder 6 à 7 questions, déplacer les détails techniques (formats, ampérage) après l'achat |
-| « Affiche fixe ou écran qui bouge? » | Argumentaire utile, mais s'ajoute à 8 autres sections | Raccourcir ou fusionner avec « Comment ça marche » |
-| Haut de page chargé | Titre, sous-titre, 2 boutons, prix, 3 avantages, compteur et animation dans le même écran | Garder : titre, prix, stock, un bouton. Les avantages passent sous la fenêtre |
-| Cartes 1 / 2 / 3 écrans | Trois cartes répétant presque la même liste | Un seul bloc de réservation |
-| Mentions « 7 000 $ de valeur » | Affirmation commerciale à confirmer avec Anis | Confirmer ou retirer |
-
-## Étapes
-
-### 1. Décisions rapides (avec Anis)
-
-- [ ] Confirmer la valeur « 7 000 $ par écran » affichée.
-- [ ] Confirmer que Interac reste manuel par courriel au lancement.
-- [ ] Confirmer le maximum par commande (10 écrans).
-
-Note de prix : 3 écrans = 3 × 530 $ et 3 × 650 $. Le forfait de 3 est donc le tarif « par écran » de 3 écrans et plus. Formule : 1 écran = 599 $ / 795 $, 2 écrans = 1 095 $ / 1 395 $, 3 écrans ou plus = quantité × 530 $ / 650 $.
-
-### 2. Alléger la page
-
-- [ ] Masquer la section montage et le bloc montage de la page « Merci ».
-- [ ] Raccourcir la FAQ et la section « Affiche vs écran ».
-- [ ] Simplifier le haut de page.
-- [ ] Vérifier les logos et photos de la section preuves (vides sur une capture d'écran, probablement chargement différé).
-
-### 3. Bloc de réservation unique
-
-- [x] Fiches d'offres : trois fiches identiques, la 3ᵉ devient un compteur de 3 à 10 écrans (prix, économie, largeur, visuel, alimentation mis à jour). Lien « plus de 3 écrans » retiré. Reste à brancher les boutons à `POST /api/checkout`.
-- [ ] Le choix est lu directement par le paiement : la page envoie seulement `{ screens: N }` au serveur.
-- [ ] Les boutons « Réserver » des autres sections font défiler vers ce bloc.
-- [ ] Désactiver les quantités qui dépassent le stock restant.
-
-### 4. Fonctions serveur (`server/`)
-
-- [ ] `get-stock` : compte les écrans payés et en cours de paiement dans Stripe (20 − vendus − en attente). Remplace `reserved` à la main.
-- [ ] `create-checkout` : recalcule le prix selon l'heure de Montréal, vérifie le stock, crée la session Stripe (prix en `price_data`, TPS et TVQ, champs « numéro de kiosque » et « entreprise », adresse, téléphone, expiration 30 min, `metadata.screens`). Vérifie le stock une seconde fois après la création pour les achats simultanés.
-- [ ] `stripe-webhook` : sur `checkout.session.completed`, avertir l'équipe par courriel.
-- [ ] Variables dans Netlify : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_TAX_RATE_TPS`, `STRIPE_TAX_RATE_TVQ`, `SITE_URL`.
-
-### 5. Page « Merci »
-
-- [ ] Afficher le récapitulatif (nombre d'écrans, total).
-- [ ] Garder les étapes suivantes (visuels, kiosque, installation).
-
-### 6. Finitions
-
-- [ ] Page « Conditions et confidentialité » (remboursement jusqu'au 15 janvier, loi 25).
-- [ ] Icône du site, image de partage, balises de partage.
-- [ ] Identifiants de statistiques dans `public/js/config.js`.
-
-### 7. Essais et lancement
-
-- [ ] `netlify dev` pour tester les fonctions en local.
-- [ ] Mode test Stripe : carte `4242 4242 4242 4242`, carte refusée `4000 0000 0000 0002`, abandon de page, deux achats simultanés du dernier écran, bascule du prix le 15 décembre.
-- [ ] Vérifier le reçu : TPS et TVQ séparées avec les numéros d'inscription.
-- [ ] Téléphone réel : boutons, vidéo, barre du bas.
-- [ ] Passage en réel : clés réelles, nouveaux taux de taxe et webhook, paiement réel remboursé.
-- [ ] Annonce par ChauCase.
+- [ ] Valider avec Anis les marges de transport/retour de ChauCase (période actuellement provisoire).
+- [ ] Fixer la fermeture des ventes si une date spécifique est souhaitée.
+- [ ] Valider la valeur commerciale de 7 000 $ et l’alimentation à 4+ écrans (extrapolée, non confirmée).
+- [ ] Conditions de location, remboursement, confidentialité et taxes.
+- [ ] Favicon, image de partage et statistiques sous consentement.
+- [ ] Relier le dépôt renommé à Netlify, renseigner les secrets et vérifier le webhook.
+- [ ] Vérifier domaine personnalisé et liens envoyés par les organisateurs.
+- [ ] Validation en test, puis passage réel après levée des blocages.
 
 ## Plus tard
 
-- Montage graphique (150 $ / 350 $) dans le panier ou après l'achat.
-- Interac en ligne si Stripe l'offre.
-- Rappels automatiques pour les visuels.
-- QuickBooks.
+- Interface et contenu en anglais.
+- Montage graphique au paiement (fonctionnalité en attente).
+- Administration des événements si les fichiers deviennent insuffisants.
+- Rappels de remise des visuels et export comptable.
+
+## Respect du design
+
+Ne pas appliquer l’ancienne proposition de remplacer les trois fiches par un bloc unique ni de raccourcir la page : le choix actuel est de garder la présentation existante et de la rendre configurable.
