@@ -71,7 +71,7 @@ test('checkout : prix serveur, événement et dates figés, taxes et retour cont
   assert.equal(p.metadata.rental_end,event.dates.rentalEndsAt);
   assert.equal(p.metadata.inventory_pool,'pixanova-led');
   assert.ok(p.success_url.includes('event=chaucase-2027&merci=1'));
-  assert.ok(p.cancel_url.includes('event=chaucase-2027#offres'));
+  assert.ok(p.cancel_url.includes('event=chaucase-2027&lang=fr#offres'));
   assert.equal(p.payment_method_types,undefined); // API Stripe actuelle : réglage au Dashboard.
 });
 test('checkout : prix de 4 écrans et fermeture selon les dates', async () => {

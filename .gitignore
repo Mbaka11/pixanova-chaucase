@@ -13,6 +13,7 @@
 # Configuration publique générée par npm run build / npm run dev
 /public/js/catalog-data.js
 /public/js/events-shared.js
+/public/js/i18n.mjs
 
 # Netlify (CLI locale)
 .netlify/

@@ -11,7 +11,7 @@ Une plateforme réutilisable pour les salons : l’exposant choisit son événem
 - Événements gérés par **fichiers de configuration**, sans interface administrateur.
 - Page d’accueil avec sélection du salon, puis modèle commun `evenement.html?event=<id>`.
 - Noms, logos, dates et tarifs alimentés depuis la configuration; conserver les animations, les trois fiches et le compteur 3+.
-- Français par défaut; traduction anglaise reportée.
+- Français par défaut; anglais disponible via FR / EN et `?lang=en`. Interface, dates, prix, FAQ, consentement, animation SVG et libellés Checkout traduits. Les vidéos gardent leur audio d’origine, avec une mention sur la page anglaise.
 - Paiement : session Stripe Checkout calculée côté serveur, pas de douze liens.
 - Montage graphique : achat reporté. La présentation actuelle reste en place; pas de nouvelles options de montage à développer à ce stade.
 
@@ -52,6 +52,7 @@ Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975
 - Deuxième événement fictif vérifié uniquement dans un test navigateur, non publié.
 - Stripe de test connecté; taxes exclusives TPS/TVQ vérifiées. Session de 1 écran : 599 $ + 89,70 $ = 688,70 $. Session expirée sans paiement.
 - Le stock partagé passe de 20 à 19 pendant ce test puis revient à 20 après expiration.
+- Session anglaise de test vérifiée : locale Stripe `en`, champs Booth number / Company name, montant inchangé; expirée sans paiement. Le retour conserve `lang=en`.
 - Webhook non configuré localement; clé de signature absente. Notifications Resend facultatives, déduplication durable encore à faire.
 - Aucun achat réel; boutons de paiement non branchés. Page « Merci » historique à sécuriser par vérification serveur.
 

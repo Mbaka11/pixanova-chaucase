@@ -1,6 +1,8 @@
 import { currentPhase, bookingIsOpen } from './events-shared.js';
-const { event: EVENT, platform: PLATFORM, labels: LABELS } = window.CONFIG;
-const fm0 = c => (c/100).toLocaleString('fr-CA',{maximumFractionDigits:0}).replace(/[  ]/g,' ')+' $';
+import { copy, money } from './i18n.mjs';
+const { event: EVENT, platform: PLATFORM, labels: LABELS, language: LANGUAGE } = window.CONFIG;
+const ui = copy(LANGUAGE);
+const fm0 = c => money(c, LANGUAGE);
 /* Prix en cents, avant taxes. 3 écrans et plus : quantité × tarif par écran (mêmes règles que le serveur). */
 const P = {
   1:{early:EVENT.pricing.early.one,reg:EVENT.pricing.regular.one},
@@ -61,20 +63,19 @@ window.addEventListener('hashchange',route);
 
 
 /* ---------- Fiches d'offres : 1 écran, 2 écrans, 3 écrans et plus (compteur) ---------- */
-const WORDS = {3:'Trois',4:'Quatre',5:'Cinq',6:'Six',7:'Sept',8:'Huit',9:'Neuf',10:'Dix'};
 function renderOffers(left, early){
   const card = (n, count) => {
     const now = priceFor(count, S.phase), was = priceFor(count, 'reg'), save = was - priceFor(count, 'early');
     document.querySelector('[data-p="'+n+'"]').textContent = fm0(now);
     const w = document.querySelector('[data-w="'+n+'"]'); w.textContent = fm0(was); w.style.display = early ? '' : 'none';
     const sv = document.querySelector('[data-s="'+n+'"]'); sv.style.display = early ? '' : 'none';
-    sv.textContent = 'Économisez '+fm0(save)+' avant le '+LABELS.earlyDeadline;
+    sv.textContent = ui.save(fm0(save), LABELS.earlyDeadline);
     const bt = document.querySelector('[data-b="'+n+'"]');
     bt.dataset.pack = count;
     bt.setAttribute('aria-disabled', String(!S.open));
-    if(!S.open){ bt.textContent='Réservations fermées'; bt.setAttribute('href','#'); }
-    else if(left >= count){ bt.textContent = count===1 ? 'Réserver 1 écran' : 'Réserver '+count+' écrans'; bt.setAttribute('href', payUrl(count)||'#'); }
-    else { bt.textContent = left===0 ? "Liste d'attente" : 'Seulement '+left+' restant'+(left>1?'s':'')+" : liste d'attente"; bt.setAttribute('href','#/liste-attente'); }
+    if(!S.open){ bt.textContent=ui.closed; bt.setAttribute('href','#'); }
+    else if(left >= count){ bt.textContent = ui.reserve(count); bt.setAttribute('href', payUrl(count)||'#'); }
+    else { bt.textContent = left===0 ? ui.waitlistShort : ui.onlyLeft(left); bt.setAttribute('href','#/liste-attente'); }
   };
   card(1, 1); card(2, 2);
 
@@ -84,19 +85,19 @@ function renderOffers(left, early){
   const n = o3.n, cm = n*SCREEN_W;
   card(3, n);
   document.getElementById('o3N').textContent = n;
-  document.getElementById('o3Title').textContent = n+' écrans';
+  document.getElementById('o3Title').textContent = ui.screen(n);
   document.getElementById('o3Minus').disabled = n <= 3;
   document.getElementById('o3Plus').disabled = n >= maxN;
   document.getElementById('o3Step').style.display = left < 3 ? 'none' : '';
-  document.getElementById('o3Value').innerHTML = 'Valeur des '+(WORDS[n]||n).toLowerCase()+' écrans : <b>'+fm0(n*SCREEN_VALUE)+'</b>';
-  document.getElementById('o3Width').textContent = (WORDS[n]||n)+' écrans côte à côte : '+cm+' cm'+(n===3?', tout le mur du kiosque':'');
-  document.getElementById('o3Visual').textContent = 'Un visuel panoramique de '+(n*SCREEN_PX)+' x '+SCREEN_HEIGHT+' px, ou '+(WORDS[n]||n).toLowerCase()+' messages';
+  document.getElementById('o3Value').innerHTML = ui.value(n, fm0(n*SCREEN_VALUE));
+  document.getElementById('o3Width').textContent = ui.width(n, cm);
+  document.getElementById('o3Visual').textContent = ui.visual(n, n*SCREEN_PX, SCREEN_HEIGHT);
   // Intensité : 17 à 20 A pour 3 écrans, proportionnel au-delà (à confirmer avec Anis)
   const lo = Math.ceil(n*17/3), hi = Math.ceil(n*20/3);
-  document.getElementById('o3Amp').textContent = '120 V · '+lo+' à '+hi+' A';
+  document.getElementById('o3Amp').textContent = ui.amps(lo, hi);
   const note = document.getElementById('o3AmpNote');
-  note.hidden = n < 4; note.textContent = 'À répartir sur plusieurs prises du kiosque.';
-  document.getElementById('o3Badge').textContent = n===3 ? 'Kiosque 10 × 10' : 'Grand kiosque';
+  note.hidden = n < 4; note.textContent = ui.powerNote;
+  document.getElementById('o3Badge').textContent = ui.badge(n);
 }
 document.getElementById('o3Minus').addEventListener('click',()=>{ o3.n--; renderAll(); track('screens_change',{screens:o3.n}); });
 document.getElementById('o3Plus').addEventListener('click',()=>{ o3.n++; renderAll(); track('screens_change',{screens:o3.n}); });
@@ -110,36 +111,36 @@ function renderAll(){
   b.className='banner'+(early?'':' over');
   const dl=Math.max(1,Math.ceil((Date.parse(CONFIG.earlyDeadline)-Date.now())/864e5));
   b.innerHTML = early
-   ? 'Early bird : '+(dl>1?'plus que <b>'+dl+' jours</b>':'<b>dernier jour</b>')+' <span class="hm">pour profiter de</span><span class="dm">·</span> <b>'+fm0(P[1].early)+'</b> <s>'+fm0(P[1].reg)+'</s><span class="hm"> par écran</span>'
-   : 'La période early bird est terminée. Prix régulier : <b>'+fm0(P[1].reg)+' par écran</b>.';
-  if(!S.open) b.textContent='Les réservations sont fermées pour '+LABELS.fullName+'.';
+   ? 'Early bird: '+ui.daysLeft(dl)+' · <b>'+fm0(P[1].early)+'</b> <s>'+fm0(P[1].reg)+'</s><span class="hm"> '+ui.perScreen+'</span>'
+   : ui.regularBanner(fm0(P[1].reg));
+  if(!S.open) b.textContent=ui.closedFor(LABELS.fullName);
   renderOffers(left, early);
   document.querySelector('[data-big]').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
-  document.querySelector('[data-punch]').innerHTML='Pour <em>'+fm0(P[1][S.phase]-35000)+' de plus</em>, passez d\'un message figé à un écran de '+fm0(SCREEN_VALUE)+' de valeur, en boucle, pendant '+LABELS.durationDays+' jours.';
+  document.querySelector('[data-punch]').innerHTML=ui.punch(fm0(P[1][S.phase]-35000),fm0(SCREEN_VALUE),LABELS.durationDays);
   document.getElementById('pbNow').textContent=fm0(P[1][S.phase]);
   const pw=document.getElementById('pbWas'), ps=document.getElementById('pbSave');
   pw.style.display=ps.style.display=early?'':'none';
-  pw.textContent=fm0(P[1].reg); ps.textContent='Économisez '+fm0(P[1].reg-P[1].early);
-  document.getElementById('pbTag').textContent=early?'Prix early bird':'Prix régulier';
+  pw.textContent=fm0(P[1].reg); ps.textContent=ui.save(fm0(P[1].reg-P[1].early));
+  document.getElementById('pbTag').textContent=ui.priceTag(early);
   document.getElementById('left').textContent=S.stock === null ? '—' : left;
-  document.querySelector('#counter .live').lastChild.textContent=S.stock === null ? ' Disponibilité' : ' En direct';
+  document.querySelector('#counter .live').lastChild.textContent=S.stock === null ? ui.availability : ui.live;
   const sg=document.getElementById('segs'); if(!sg.children.length){ for(let i=0;i<CONFIG.total;i++) sg.appendChild(document.createElement('i')); }
   sg.hidden=S.stock===null;
   [...sg.children].forEach((e,i)=>{ e.className=i<left?'on'+(i===left-1?' last':''):'off'; });
   document.getElementById('counter').classList.toggle('low',left<=5);
-  document.getElementById('counterNote').textContent=S.stock===null?'Disponibilité à confirmer pour les dates de ce salon.':left===0?'Tous les écrans sont réservés. Inscrivez-vous à la liste d\'attente.':left<=5?'Presque complet. Ne tardez pas.':'';
+  document.getElementById('counterNote').textContent=S.stock===null?ui.stockNote:left===0?ui.soldOutNote:left<=5?ui.lowStock:'';
   document.querySelectorAll('[data-cta]').forEach(a=>{
     if(!a.dataset.t) a.dataset.t=a.textContent;
-    if(!S.open){ a.textContent='Réservations fermées'; a.setAttribute('href','#offres'); }
-    else if(left===0){ a.textContent='Rejoindre la liste d\'attente'; a.setAttribute('href','#/liste-attente'); }
+    if(!S.open){ a.textContent=ui.closed; a.setAttribute('href','#offres'); }
+    else if(left===0){ a.textContent=ui.waitlist; a.setAttribute('href','#/liste-attente'); }
     else { a.textContent=a.dataset.t; a.setAttribute('href','#offres'); }
   });
-  document.querySelector('[data-final]').textContent=!S.open?'Réservations fermées pour cet événement.':(early?'Prix early bird jusqu’au '+LABELS.earlyDeadline+'. ':'')+(S.stock===null?'Disponibilité selon les dates de votre salon.':left===0?'Tous les écrans sont réservés.':'Il reste '+left+' écran'+(left>1?'s':'')+'.');
+  document.querySelector('[data-final]').textContent=!S.open?ui.closedFor(LABELS.fullName):(early?ui.deadline(LABELS.earlyDeadline):'')+(S.stock===null?ui.datesAvailability:left===0?ui.allReserved:ui.remaining(left)+'.');
   document.getElementById('stkP').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
-  document.getElementById('stkL').textContent=!S.open?'Réservations fermées':S.stock===null?'Stock à confirmer':left===0?'Complet':left+' écran'+(left>1?'s':'')+' restant'+(left>1?'s':'');
+  document.getElementById('stkL').textContent=!S.open?ui.closed:S.stock===null?ui.stockUnknown:left===0?ui.soldOut:ui.remaining(left);
   document.querySelectorAll('[data-mlink]').forEach(a=>a.setAttribute('href',(CONFIG.links.montage||{})[a.dataset.mlink]||'#'));
   const wl=document.getElementById('wlMail');
-  if(wl) wl.setAttribute('href','mailto:'+CONFIG.waitlistEmail+'?subject='+encodeURIComponent('Liste d’attente '+LABELS.fullName)+'&body='+encodeURIComponent('Bonjour,\n\nNuméro de kiosque :\nEntreprise :\nNombre d\'écrans souhaité :\n'));
+  if(wl) wl.setAttribute('href','mailto:'+CONFIG.waitlistEmail+'?subject='+encodeURIComponent(ui.waitSubject(LABELS.fullName))+'&body='+encodeURIComponent(ui.waitBody));
 }
 document.querySelectorAll('[data-cta]').forEach(a=>a.dataset.t=a.textContent);
 
@@ -159,7 +160,7 @@ document.addEventListener('click',e=>{
   if(a){
     const href=a.getAttribute('href');
     if(a.getAttribute('aria-disabled')==='true'){e.preventDefault();return;}
-    if(!href||href==='#'){ e.preventDefault(); alert('Le paiement sera activé après la validation du serveur de réservation.'); return; }
+    if(!href||href==='#'){ e.preventDefault(); alert(ui.paymentPending); return; }
     if(/^https?:/.test(href)) track('begin_checkout',{pack:a.dataset.pack||a.dataset.mlink,phase:S.phase});
     return;
   }
@@ -176,7 +177,7 @@ function tick(){
   wrap.style.visibility='';
   const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),sec=Math.floor(ms%6e4/1e3);
   const q=n=>String(n).padStart(2,'0');
-  el.textContent=d+' j '+q(h)+' : '+q(m)+' : '+q(sec);
+  el.textContent=d+' '+ui.dayAbbr+' '+q(h)+' : '+q(m)+' : '+q(sec);
 }
 setInterval(tick,1000); tick();
 
@@ -194,7 +195,7 @@ function stkUpdate(){
 }
 window.addEventListener('scroll',stkUpdate,{passive:true});
 setInterval(stkUpdate,300);
-const JS=[['s-offre','L\'offre'],['comment','Le principe'],['offres','Les prix'],['pourquoi','Pourquoi'],['montage','Montage'],['preuves','Réalisations'],['faq','Questions'],['final','Réserver']];
+const JS=['s-offre','comment','offres','pourquoi','montage','preuves','faq','final'].map((id,i)=>[id,ui.journey[i]]);
 let jCurIdx=-1;
 function jGo(i){ const el=document.getElementById(JS[i][0]); if(!el) return; closeJ();
   if(i===0) window.scrollTo({top:0,behavior:'smooth'}); else el.scrollIntoView({behavior:'smooth',block:'start'}); }
@@ -210,8 +211,8 @@ function jUpdate(force){
   const ring=document.getElementById('jring'); if(ring) ring.setAttribute('stroke-dashoffset',(C*(1-pct)).toFixed(1));
   if(cur===jCurIdx && !force && ring) return;
   jCurIdx=cur;
-  document.getElementById('jb').innerHTML=`<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="#2b4579" stroke-width="3"/><circle id="jring" cx="14" cy="14" r="11" fill="none" stroke="#6EA8FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-pct)).toFixed(1)}" transform="rotate(-90 14 14)"/></svg><span class="t"><small>${cur+1} sur ${JS.length}</small><b>${JS[cur][1]}</b></span>`;
-  document.getElementById('jl').innerHTML=JS.map((x,i)=>`<li class="${i<cur?'done':i===cur?'now':''}"><button onclick="jGo(${i})"><span>${x[1]}</span>${i===cur?'<em>Ici</em>':''}</button></li>`).join('');
+  document.getElementById('jb').innerHTML=`<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="#2b4579" stroke-width="3"/><circle id="jring" cx="14" cy="14" r="11" fill="none" stroke="#6EA8FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-pct)).toFixed(1)}" transform="rotate(-90 14 14)"/></svg><span class="t"><small>${cur+1} ${ui.of} ${JS.length}</small><b>${JS[cur][1]}</b></span>`;
+  document.getElementById('jl').innerHTML=JS.map((x,i)=>`<li class="${i<cur?'done':i===cur?'now':''}"><button onclick="jGo(${i})"><span>${x[1]}</span>${i===cur?'<em>'+ui.here+'</em>':''}</button></li>`).join('');
 }
 document.getElementById('jb').onclick=()=>{ const j=document.getElementById('jny'); const o=j.classList.toggle('open'); document.getElementById('jb').setAttribute('aria-expanded',o); };
 document.addEventListener('click',e=>{ if(!e.target.closest('#jny')) closeJ(); });

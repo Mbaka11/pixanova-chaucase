@@ -1,5 +1,13 @@
 .event-loading body{visibility:hidden}
+.top nav.language-switch{display:flex;margin-left:auto;gap:2px;flex-shrink:0;border:1px solid #ffffff45;border-radius:20px;padding:3px}
+.language-switch a{font-size:12px;font-weight:700;color:#dbe6ff;text-decoration:none;padding:5px 8px;border-radius:16px}
+.language-switch a[aria-current="page"]{background:#fff;color:#0A1A33}
+.language-switch a:focus-visible{outline:2px solid #6EA8FF;outline-offset:3px}
+.segs[hidden]{display:none}
+.media-language-note{font-size:12px;color:#b8cae5;text-align:center;padding-top:10px}
+@media(max-width:600px){.top .row1{flex-wrap:wrap}.event-back{order:3;width:100%;text-align:center;margin:0}.top nav.language-switch{gap:0}.language-switch a{padding:4px 7px}}
 .event-back{color:#dbe6ff;font-size:13px;white-space:nowrap;margin-left:auto}
+@media(max-width:600px){.hero h1 em{white-space:normal!important}.sk-top{flex-wrap:wrap;gap:4px 10px}}
 .event-dates{color:#9fb4d9;font-size:14px;margin:0 0 18px}
 @media(max-width:600px){.event-back{font-size:11px}.event-dates{font-size:12px}}
 :root{

@@ -60,11 +60,19 @@ Pour 1 ou 2 écrans, le prix est celui du forfait; dès 3, c’est la quantité 
 
 ## Français / anglais
 
-Les données d’événement et la logique sont séparées du modèle, mais les textes de l’interface sont encore en français. La traduction anglaise et le sélecteur de langue font partie d’une étape ultérieure. Aucun bouton anglais non fonctionnel n’est affiché.
+Le français reste la langue par défaut. Ajouter `?lang=en` (ou `&lang=en` si le lien contient déjà `event=...`) pour la version anglaise. Le sélecteur FR / EN conserve l’événement, l’ancre et les paramètres de retour de paiement. Une langue URL inconnue revient au français.
+
+`shared/i18n.mjs` centralise les traductions. `staticEnglish` traduit les nœuds texte et attributs accessibles du modèle français sans remplacer les icônes ou les spans de paramètres. Toute modification d’un texte source français doit donc mettre à jour son entrée anglaise. `copy(language)` produit les libellés dynamiques. Les dates et montants utilisent `Intl` (`fr-CA` ou `en-CA`).
+
+Un événement peut fournir `translations.en.description`, et facultativement `translations.en.name` et `translations.en.city`. Sans description anglaise, une phrase anglaise générique est générée avec le nom du salon; la description française n’est pas affichée par erreur dans la version anglaise.
+
+Le serveur accepte `language: "fr"` ou `"en"` lors de la création Checkout. Stripe utilise `fr-CA` pour le français et **`en` pour l’anglais** (Stripe n’accepte pas `en-CA`); la devise et les tarifs restent CAD. Les notifications internes à l’équipe restent en français.
+
+Les vidéos et les logos restent dans leur langue d’origine. La page anglaise précise que les vidéos sont en français; aucun doublage ni sous-titre anglais n’est fourni.
 
 ## Génération et aperçu
 
-`npm run build` génère `public/js/catalog-data.js` et copie les utilitaires publics. Ces deux fichiers sont ignorés par Git; ils sont reconstruits automatiquement sur Netlify.
+`npm run build` génère `public/js/catalog-data.js` et copie les utilitaires publics. Ces fichiers, ainsi que la copie publique `public/js/i18n.mjs`, sont ignorés par Git; ils sont reconstruits automatiquement sur Netlify.
 
 `npm run dev` surveille `config/` et `shared/`, regénère ces fichiers puis recharge la page. Si le JSON est invalide, le terminal indique l’erreur et il faut la corriger avant de continuer.
 

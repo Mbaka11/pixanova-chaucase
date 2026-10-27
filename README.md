@@ -49,7 +49,9 @@ media-sources/               Originaux locaux, ignorés par Git
 temp/                        Captures et essais locaux, ignorés par Git
 ```
 
-Le français est la seule langue actuellement livrée. L’anglais est prévu ultérieurement, pas encore traduit.
+Le français est la langue par défaut. Le sélecteur FR / EN active l’anglais avec `?lang=en`, y compris les dates, les prix et les retours Stripe. Exemple : http://localhost:8080/evenement.html?event=chaucase-2027&lang=en. Les vidéos et logos restent dans leur langue d’origine.
+
+Textes communs : `shared/i18n.mjs`. Descriptions propres à un salon : `translations.en` dans son fichier JSON. Les noms de marque ne sont pas traduits automatiquement.
 
 ## Déploiement
 

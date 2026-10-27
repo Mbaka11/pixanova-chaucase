@@ -1,7 +1,7 @@
 {
   "name": "Pixanova Events",
   "defaultLanguage": "fr",
-  "supportedLanguages": ["fr"],
+  "supportedLanguages": ["fr", "en"],
   "timeZone": "America/Toronto",
   "currency": "cad",
   "inventory": { "totalScreens": 20, "holdMinutes": 30 },

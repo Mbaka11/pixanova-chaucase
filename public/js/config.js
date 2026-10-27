@@ -1,25 +1,31 @@
 // Initialisation du modèle commun. Modifier config/events/*.json, pas ce fichier.
 import catalog from './catalog-data.js';
 import { eventLabels, bookingIsOpen } from './events-shared.js';
+import { copy, money as formatMoney } from './i18n.mjs';
+import { language, homeUrl, localizeEvent, translateStaticDOM, installLanguageSwitcher } from './language.js';
+const ui = copy(language);
+translateStaticDOM();
 
 const id = new URLSearchParams(location.search).get('event');
-const event = catalog.events.find((candidate) => candidate.id === id && candidate.active);
+const source = catalog.events.find((candidate) => candidate.id === id && candidate.active);
+const event = source ? localizeEvent(source) : null;
 
 if (!event) {
-  document.title = 'Événement introuvable | Pixanova Events';
+  document.title = `${ui.missingEvent} | Pixanova Events`;
   document.body.replaceChildren();
   const main = document.createElement('main');
   main.className = 'wrap page narrow';
   const title = document.createElement('h1');
-  title.textContent = 'Événement introuvable';
+  title.textContent = ui.missingEvent;
   const link = document.createElement('a');
-  link.href = '/'; link.textContent = 'Choisir un événement'; link.className = 'btn';
+  link.href = homeUrl; link.textContent = ui.chooseEvent; link.className = 'btn';
   main.append(title, link); document.body.append(main);
+  installLanguageSwitcher();
   document.documentElement.classList.remove('event-loading');
 } else {
   const { platform } = catalog;
-  const labels = eventLabels(event, platform);
-  const money = (cents) => (cents / 100).toLocaleString('fr-CA', { maximumFractionDigits: 0 }) + ' $';
+  const labels = eventLabels(event, platform, language);
+  const money = (cents) => formatMoney(cents, language);
   const text = (selector, value) => document.querySelectorAll(selector).forEach((node) => { node.textContent = value; });
   const bindings = {
     '[data-event-name]': event.name, '[data-event-full-name]': labels.fullName,
@@ -31,7 +37,7 @@ if (!event) {
     '[data-contact-phone]': platform.contact.phone,
     '#twoScreenValue': money(platform.screen.valueCents * 2),
     '#eventDates': `${labels.fullName} · ${event.city} · ${labels.period}`,
-    '.price .unit': `avant taxes, pour les ${labels.durationDays} jour${labels.durationDays > 1 ? 's' : ''} du salon`,
+    '.price .unit': ui.duration(labels.durationDays),
   };
   for (const [selector, value] of Object.entries(bindings)) text(selector, value);
   document.querySelectorAll('[data-event-logo]').forEach((img) => { img.src = event.logo; img.alt = event.name; });
@@ -41,13 +47,13 @@ if (!event) {
     if (link.textContent.includes('@')) link.textContent = platform.contact.email;
     link.href = `mailto:${platform.contact.email}`;
   });
-  document.title = `Écrans LED pour ${labels.fullName} | ${platform.name}`;
-  document.querySelector('meta[name="description"]').content = `${event.description} Livraison et installation incluses. ${labels.period}, ${event.city}.`;
+  document.title = `${ui.pageTitle(labels.fullName)} | ${platform.name}`;
+  document.querySelector('meta[name="description"]').content = `${event.description} ${ui.included} ${labels.period}, ${event.city}.`;
   document.querySelector('meta[property="og:title"]').content = document.title;
   document.querySelector('meta[property="og:description"]').content = document.querySelector('meta[name="description"]').content;
 
   window.CONFIG = {
-    event, platform, labels,
+    event, platform, labels, language,
     total: platform.inventory.totalScreens,
     earlyDeadline: event.dates.earlyBirdEndsAt,
     analytics: platform.analytics,
@@ -56,6 +62,12 @@ if (!event) {
     // Le paiement reste désactivé pendant la généralisation de l'inventaire.
     links: { early: {}, regular: {}, montage: {} },
   };
+  installLanguageSwitcher();
+  if (language === 'en') {
+    const note = document.createElement('p'); note.className='media-language-note';
+    note.textContent='Presentation and testimonial videos are in French.';
+    document.querySelector('#video .wrap').append(note);
+  }
   document.documentElement.classList.remove('event-loading');
   await import('./main.js');
 }

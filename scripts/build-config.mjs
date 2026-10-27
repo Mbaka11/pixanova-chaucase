@@ -10,4 +10,5 @@ const js = new URL('../public/js/', import.meta.url);
 mkdirSync(js, { recursive: true });
 writeFileSync(new URL('catalog-data.js', js), '// Généré depuis config/ : ne pas modifier. AUCUN secret dans config/.\nexport default ' + JSON.stringify(catalog, null, 2) + ';\n');
 copyFileSync(new URL('../shared/events.mjs', import.meta.url), new URL('events-shared.js', js));
+copyFileSync(new URL('../shared/i18n.mjs', import.meta.url), new URL('i18n.mjs', js));
 console.log(`${catalog.platform.name} : ${catalog.events.length} événement(s) validé(s).`);

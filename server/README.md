@@ -5,10 +5,10 @@ Les événements utilisent tous ces mêmes fonctions Netlify. Aucun serveur à d
 | Route | Entrée | Rôle |
 |---|---|---|
 | `GET /api/stock?event=chaucase-2027` | Identifiant d’événement | Disponibilité du parc commun sur sa période de location |
-| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3 }` | Prix et dates tirés du catalogue, session Stripe de test |
+| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "language": "en" }` | Prix et dates tirés du catalogue, session Stripe de test |
 | `POST /api/stripe-webhook` | Événement signé Stripe | Notification de paiement confirmé, événement identifié par métadonnées |
 
-Les événements inconnus ou inactifs sont refusés. Les réservations ferment à `bookingClosesAt`, sinon au début de mise à disposition du matériel. Le client n’envoie pas de prix ni de dates faisant autorité.
+Les événements inconnus ou inactifs sont refusés. Les réservations ferment à `bookingClosesAt`, sinon au début de mise à disposition du matériel. Le client n’envoie pas de prix ni de dates faisant autorité. `language` est facultatif (français par défaut), limité à `fr` / `en` et conservé dans les métadonnées et les URLs de retour. Seuls les libellés et la locale Checkout changent, jamais le prix ou le stock.
 
 ## Configuration unique
 

@@ -12,7 +12,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Modèle commun conservant le design, les animations et les trois fiches.
 - [x] Compteur de 3 à 10 écrans et alignement des prix préservés.
 - [x] Dates et noms dynamiques dans les textes, FAQ, échéances et retours Stripe.
-- [x] Français par défaut; anglais reporté.
+- [x] Français par défaut; traduction anglaise et sélecteur FR / EN (accueil, événement, dates, prix, consentement, navigation et retours Stripe).
 
 ## 2. Disponibilité globale selon le calendrier
 
@@ -53,7 +53,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 
 ## Plus tard
 
-- Interface et contenu en anglais.
+- Sous-titrage ou versions anglaises des vidéos, si souhaité (audio original conservé).
 - Montage graphique au paiement (fonctionnalité en attente).
 - Administration des événements si les fichiers deviennent insuffisants.
 - Rappels de remise des visuels et export comptable.

@@ -6,6 +6,9 @@
   "city": "Drummondville",
   "logo": "/assets/images/chaucase.jpg",
   "description": "Les écrans LED Pixanova pour les exposants de ChauCase 2027.",
+  "translations": {
+    "en": { "description": "Pixanova LED screens for exhibitors at ChauCase 2027." }
+  },
   "dates": {
     "startsOn": "2027-02-02",
     "endsOn": "2027-02-04",

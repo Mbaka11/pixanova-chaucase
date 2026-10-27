@@ -1,4 +1,5 @@
 // Fonctions pures communes : validation, dates, prix et affichage. Aucun secret ni accès Stripe.
+import { normalizeLanguage, locales } from './i18n.mjs';
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const dateOnly = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 const timestamp = (v) => typeof v === 'string' && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(v) && Number.isFinite(Date.parse(v));
@@ -8,7 +9,7 @@ const publicAsset = (v) => typeof v === 'string' && v.startsWith('/assets/') && 
 export function validateCatalog(input) {
   const { platform, events } = input;
   assert(platform?.name && platform.currency === 'cad', 'Plateforme/devise invalide');
-  assert(platform.defaultLanguage === 'fr' && platform.supportedLanguages.includes('fr'), 'Français requis');
+  assert(platform.defaultLanguage === 'fr' && Array.isArray(platform.supportedLanguages) && platform.supportedLanguages.includes('fr') && platform.supportedLanguages.every((language) => ['fr','en'].includes(language)), 'Langues invalides');
   new Intl.DateTimeFormat('fr-CA', { timeZone: platform.timeZone });
   assert(Number.isSafeInteger(platform.inventory?.totalScreens) && platform.inventory.totalScreens > 0, 'Inventaire invalide');
   assert(Number.isInteger(platform.inventory?.holdMinutes) && platform.inventory.holdMinutes >= 30 && platform.inventory.holdMinutes <= 1440, 'Blocage Stripe : 30 à 1440 minutes');
@@ -53,21 +54,22 @@ export function computePrice(event, screens, now = Date.now()) {
   return { phase, screens, totalCents, unitCents: totalCents / screens };
 }
 
-export function formatDate(value, timeZone, { year = false, inclusiveDeadline = false } = {}) {
+export function formatDate(value, timeZone, { year = false, inclusiveDeadline = false, language = 'fr' } = {}) {
   const date = new Date(dateOnly(value) ? `${value}T12:00:00Z` : Date.parse(value) - (inclusiveDeadline ? 1 : 0));
-  return new Intl.DateTimeFormat('fr-CA', { timeZone, day: 'numeric', month: 'long', ...(year ? { year: 'numeric' } : {}) }).format(date);
+  return new Intl.DateTimeFormat(locales[normalizeLanguage(language)], { timeZone, day: 'numeric', month: 'long', ...(year ? { year: 'numeric' } : {}) }).format(date);
 }
 
-export function eventLabels(event, platform) {
+export function eventLabels(event, platform, language = 'fr') {
+  language = normalizeLanguage(language);
   const d = event.dates, tz = platform.timeZone;
-  const date = (v, year = false) => formatDate(v, tz, { year });
+  const date = (v, year = false) => formatDate(v, tz, { year, language });
   return {
     fullName: `${event.name} ${event.edition}`,
     starts: date(d.startsOn), ends: date(d.endsOn), installation: date(d.installationOn),
-    period: `du ${date(d.startsOn)} au ${date(d.endsOn, true)}`,
-    earlyDeadline: formatDate(d.earlyBirdEndsAt, tz, { inclusiveDeadline: true }),
-    refundDeadline: formatDate(d.refundEndsAt, tz, { inclusiveDeadline: true }),
-    refundDeadlineFull: formatDate(d.refundEndsAt, tz, { inclusiveDeadline: true, year: true }),
+    period: language === 'en' ? `from ${date(d.startsOn)} to ${date(d.endsOn, true)}` : `du ${date(d.startsOn)} au ${date(d.endsOn, true)}`,
+    earlyDeadline: formatDate(d.earlyBirdEndsAt, tz, { inclusiveDeadline: true, language }),
+    refundDeadline: formatDate(d.refundEndsAt, tz, { inclusiveDeadline: true, language }),
+    refundDeadlineFull: formatDate(d.refundEndsAt, tz, { inclusiveDeadline: true, year: true, language }),
     artworkDeadline: date(d.artworkDueOn), artworkDeadlineFull: date(d.artworkDueOn, true),
     durationDays: Math.round((Date.parse(d.endsOn) - Date.parse(d.startsOn)) / 86400000) + 1,
   };
