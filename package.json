@@ -4,9 +4,14 @@
   "private": true,
   "description": "Page de vente des écrans LED Pixanova pour ChauCase 2027",
   "scripts": {
-    "dev": "browser-sync start --server public --files \"public/**/*\" --port 8080 --no-notify --no-open --no-ui"
+    "dev": "browser-sync start --server public --files \"public/**/*\" --port 8080 --no-notify --no-open --no-ui",
+    "dev:full": "netlify dev --dir public --functions netlify/functions",
+    "test": "node --test test/*.test.mjs"
   },
   "devDependencies": {
     "browser-sync": "^3.0.4"
+  },
+  "dependencies": {
+    "stripe": "^23.0.1"
   }
 }
