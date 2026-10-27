@@ -1,6 +1,7 @@
 import { currentPhase, bookingIsOpen } from './events-shared.js';
 import { copy, money } from './i18n.mjs';
 import { initTestimonials } from './testimonials.js';
+import { verifyConfirmation } from './confirmation.js';
 const { event: EVENT, platform: PLATFORM, labels: LABELS, language: LANGUAGE } = window.CONFIG;
 const ui = copy(LANGUAGE);
 const fm0 = c => money(c, LANGUAGE);
@@ -54,6 +55,7 @@ function route(){
   if(h.startsWith('#/')){ const p=h.slice(1).split('?')[0]; target=(p==='/merci'||p==='/liste-attente')?p:'/'; }
   else if(new URLSearchParams(location.search).has('merci')) target='/merci';
   curRoute=target;
+  if (target === '/merci') void verifyConfirmation(CONFIG);
   document.body.classList.toggle('nohome',target!=='/');
   routes.forEach(r=>r.hidden=r.dataset.route!==target);
   if(h.startsWith('#/')||target!=='/') window.scrollTo(0,0);
@@ -161,11 +163,50 @@ document.addEventListener('click',e=>{
   if(a){
     const href=a.getAttribute('href');
     if(a.getAttribute('aria-disabled')==='true'){e.preventDefault();return;}
+    if(a.hasAttribute('data-pack') && href!=='#/liste-attente'){ e.preventDefault(); void startCheckout(Number(a.dataset.pack)); return; }
     if(!href||href==='#'){ e.preventDefault(); alert(ui.paymentPending); return; }
     if(/^https?:/.test(href)) track('begin_checkout',{pack:a.dataset.pack||a.dataset.mlink,phase:S.phase});
     return;
   }
   const c=e.target.closest('[data-cta]'); if(c) track('cta_click',{label:(c.dataset.t||c.textContent).trim()});
+});
+
+let checkoutPending = false;
+async function startCheckout(screens){
+  if(checkoutPending) return;
+  checkoutPending = true;
+  let redirecting = false;
+  let status = document.getElementById('checkoutStatus');
+  if(!status){ status=document.createElement('p'); status.id='checkoutStatus'; status.className='checkout-status'; status.setAttribute('role','status'); status.setAttribute('aria-live','polite'); document.querySelector('.offers').after(status); }
+  status.textContent=ui.checkoutLoading;
+  document.querySelectorAll('[data-pack]').forEach(a=>{ a.setAttribute('aria-disabled','true'); a.classList.add('checkout-busy'); });
+  try {
+    const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:EVENT.id,screens,language:LANGUAGE})});
+    const data=await response.json();
+    if(!response.ok){
+      if(data.error==='not_enough_stock'){await loadStock();throw new Error(ui.checkoutStock);}
+      if(data.error==='booking_closed')throw new Error(ui.checkoutClosed);
+      if(['production_inventory_not_ready','tax_rates_not_configured'].includes(data.error))throw new Error(ui.checkoutSetup);
+      throw new Error(ui.checkoutError);
+    }
+    const url=new URL(data.url);
+    if(url.protocol!=='https:' || url.hostname!=='checkout.stripe.com')throw new Error(ui.checkoutError);
+    track('begin_checkout',{screens,phase:data.phase});
+    window.location.assign(url.href);
+    redirecting=true;
+  } catch(error){
+    const known=[ui.checkoutStock,ui.checkoutClosed,ui.checkoutSetup,ui.checkoutError];
+    status.textContent=known.includes(error.message)?error.message:ui.checkoutError;
+  } finally {
+    if(!redirecting){
+      checkoutPending=false;
+      document.querySelectorAll('[data-pack]').forEach(a=>a.classList.remove('checkout-busy'));
+      renderAll();
+    }
+  }
+}
+window.addEventListener('pageshow',event=>{
+  if(event.persisted){checkoutPending=false;document.querySelectorAll('[data-pack]').forEach(a=>a.classList.remove('checkout-busy'));renderAll();void loadStock();}
 });
 
 /* Compte à rebours en direct jusqu'à la fin de l'early bird */

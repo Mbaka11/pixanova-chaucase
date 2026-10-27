@@ -6,6 +6,7 @@ Les événements utilisent tous ces mêmes fonctions Netlify. Aucun serveur à d
 |---|---|---|
 | `GET /api/stock?event=chaucase-2027` | Identifiant d’événement | Disponibilité du parc commun sur sa période de location |
 | `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "language": "en" }` | Prix et dates tirés du catalogue, session Stripe de test |
+| `GET /api/reservation?event=...&session_id=...` | Événement + session Stripe | Vérification du paiement; récapitulatif sans donnée personnelle |
 | `POST /api/stripe-webhook` | Événement signé Stripe | Notification de paiement confirmé, événement identifié par métadonnées |
 
 Les événements inconnus ou inactifs sont refusés. Les réservations ferment à `bookingClosesAt`, sinon au début de mise à disposition du matériel. Le client n’envoie pas de prix ni de dates faisant autorité. `language` est facultatif (français par défaut), limité à `fr` / `en` et conservé dans les métadonnées et les URLs de retour. Seuls les libellés et la locale Checkout changent, jamais le prix ou le stock.
@@ -41,4 +42,6 @@ npm test
 
 Les tests couvrent le catalogue, les dates et tarifs de différents salons, le chevauchement, la réutilisation des écrans, les anciennes sessions, les périodes figées, l’expiration et le rejet des clés réelles.
 
-Une création puis expiration Stripe réelle **en mode test** a validé le calcul des taxes et les métadonnées. Aucun paiement n’a été effectué.
+Le parcours réel **en bac à sable** a été vérifié : paiement accepté puis remboursé, refus de carte, expiration, compteur 4 écrans, disponibilité selon le calendrier et webhook signé. Aucun paiement réel n’a été effectué et le stock de test est revenu à 20 / 20.
+
+Commandes et matrice d’essais : [docs/STRIPE-LOCAL.md](../docs/STRIPE-LOCAL.md). Les paiements réels restent bloqués; la réservation atomique et les autres limites listées ci-dessus doivent encore être traitées.

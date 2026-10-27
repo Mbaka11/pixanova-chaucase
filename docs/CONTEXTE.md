@@ -53,8 +53,10 @@ Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975
 - Stripe de test connecté; taxes exclusives TPS/TVQ vérifiées. Session de 1 écran : 599 $ + 89,70 $ = 688,70 $. Session expirée sans paiement.
 - Le stock partagé passe de 20 à 19 pendant ce test puis revient à 20 après expiration.
 - Session anglaise de test vérifiée : locale Stripe `en`, champs Booth number / Company name, montant inchangé; expirée sans paiement. Le retour conserve `lang=en`.
-- Webhook non configuré localement; clé de signature absente. Notifications Resend facultatives, déduplication durable encore à faire.
-- Aucun achat réel; boutons de paiement non branchés. Page « Merci » historique à sécuriser par vérification serveur.
+- Webhook local configuré avec Stripe CLI; secret dans `.env`, jamais affiché ni versionné. Paiement test reçu et signature vérifiée (HTTP 200); absence de signature refusée (HTTP 400).
+- Boutons de paiement branchés sans changer les trois fiches. Page « Merci » vérifiée côté serveur avec `/api/reservation`; `merci=1` seul ne confirme rien.
+- Paiement test FR de 688,70 $ réussi puis intégralement remboursé; refus de carte EN et expiration testés, stock final 20 / 20. Aucun achat réel.
+- Notifications Resend désactivées durant les essais, déduplication durable encore à faire. Voir [STRIPE-LOCAL.md](STRIPE-LOCAL.md) pour les résultats et les limites.
 
 ## À confirmer avant production
 

@@ -5,13 +5,15 @@
   "description": "Pixanova Events : location d’écrans LED par événement, avec inventaire partagé selon les dates",
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "dev:full": "netlify dev",
+    "dev:full": "netlify dev --offline --no-open",
+    "stripe:listen": "node --env-file=.env scripts/stripe-listen.mjs",
     "test": "node --test test/*.test.mjs",
     "build": "node scripts/build-config.mjs",
     "pretest": "npm run build"
   },
   "devDependencies": {
-    "browser-sync": "^3.0.4"
+    "browser-sync": "^3.0.4",
+    "netlify-cli": "^27.15.0"
   },
   "dependencies": {
     "stripe": "^23.0.1"

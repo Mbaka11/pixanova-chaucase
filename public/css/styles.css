@@ -1,4 +1,8 @@
 .event-loading body{visibility:hidden}
+.confirmation-pending main[data-route="/merci"] .card{display:none}
+.checkout-status{margin:18px 0;color:#dbe6ff;font-weight:600;text-align:center}
+.checkout-busy{opacity:.6;cursor:wait}
+.reservation-summary{margin:22px 0;padding:16px;background:#e3ecff;border-radius:10px;font-weight:600;line-height:1.6}
 .top nav.language-switch{display:flex;margin-left:auto;gap:2px;flex-shrink:0;border:1px solid #ffffff45;border-radius:20px;padding:3px}
 .language-switch a{font-size:12px;font-weight:700;color:#dbe6ff;text-decoration:none;padding:5px 8px;border-radius:16px}
 .language-switch a[aria-current="page"]{background:#fff;color:#0A1A33}

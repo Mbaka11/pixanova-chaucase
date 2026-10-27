@@ -2,7 +2,7 @@
 
 Plateforme de location d’écrans LED pour exposants : un accueil pour choisir son événement, un modèle de page réutilisable et un serveur commun de réservation Stripe.
 
-**État :** configuration multiévénement et aperçu opérationnels; Stripe testé avec création/expiration de session, sans paiement. Les boutons de paiement ne sont pas encore branchés. Les ventes réelles sont bloquées tant que le stock n’est pas réservé de manière atomique.
+**État :** configuration multiévénement et parcours Stripe de test opérationnels. Boutons branchés, confirmation vérifiée côté serveur, webhook local signé, paiement et remboursement de test validés. Les ventes réelles restent bloquées tant que le stock n’est pas réservé de manière atomique.
 
 ## Développement
 
@@ -23,7 +23,9 @@ npm test       # validation de configuration + tests métier
 npm run build # génère les données publiques à partir de config/
 ```
 
-`npm run dev:full` nécessite la CLI Netlify installée et lance le site avec les fonctions sur http://localhost:8888. Le serveur statique seul ne fournit pas `/api/stock` : l’interface indique alors « Stock à confirmer » plutôt qu’un faux stock de 20.
+`npm run dev:full` lance le site avec les fonctions sur http://localhost:8888 (CLI Netlify incluse dans les dépendances). Pour le transfert des événements Stripe, lancer `npm run stripe:listen` dans un autre terminal. Voir [le guide de test Stripe local](docs/STRIPE-LOCAL.md).
+
+Le serveur statique seul sur le port 8080 ne fournit pas `/api/stock` : l’interface indique alors « Stock à confirmer » plutôt qu’un faux stock de 20.
 
 ## Organisation
 
@@ -67,5 +69,6 @@ Le dossier local porte encore le nom historique `PixaNova-chaucase` : ton fichie
 - [Configurer et ajouter un événement](docs/EVENEMENTS.md)
 - [Plan à suivre](docs/PLAN.md)
 - [API et limites du serveur](server/README.md)
+- [Serveur et essais Stripe locaux](docs/STRIPE-LOCAL.md)
 
 Les anciens `HANDOFF.md`, `GUIDE-LANCEMENT.md` et `docs/archive/` sont historiques; leurs instructions monoévénement ne définissent plus l’architecture actuelle.

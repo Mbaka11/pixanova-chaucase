@@ -33,12 +33,16 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Session de test créée avec événement et dates, 688,70 $ pour un écran; expirée sans paiement.
 - [x] Retour Stripe conserve l’événement choisi.
 - [x] Gestion des moyens de paiement compatible avec l’API Stripe actuelle (configuration Dashboard).
-- [ ] Brancher les boutons existants à `/api/checkout` sans remplacer les fiches.
-- [ ] Configurer le webhook signé localement puis sur Netlify.
-- [ ] Page « Merci » : vérifier côté serveur que la session correspond à l’événement et est payée. Le paramètre `merci=1` n’est pas une preuve de paiement.
-- [ ] Afficher récapitulatif et référence de réservation.
+- [x] Brancher les boutons existants à `/api/checkout` sans remplacer les fiches; attente et erreurs bilingues.
+- [x] Configurer et vérifier le webhook signé localement avec Stripe CLI.
+- [ ] Configurer le webhook du domaine public sur Netlify.
+- [x] Page « Merci » : vérifier côté serveur événement et paiement, masquer les détails pour les états impayé/expiré/remboursé ou une session invalide.
+- [x] Afficher un récapitulatif vérifié (écrans, montant, taxes).
+- [ ] Ajouter une référence de réservation client durable.
 - [ ] Courriels client/équipe fiables et déduplication persistante des événements Stripe.
-- [ ] Tests complets : carte acceptée/refusée, abandon, stock concurrent, paiements différés, remboursements et événements en chevauchement.
+- [x] Tests locaux Stripe : carte acceptée/refusée, retour anglais/français, expiration, remboursement, compteur 4 écrans et disponibilité selon chevauchements; stock final restauré.
+- [ ] Tests supplémentaires : 3-D Secure, stock atomique concurrent, reprises réseau et paiements différés.
+- Résultats et commandes : [STRIPE-LOCAL.md](STRIPE-LOCAL.md).
 
 ## 4. Validation métier et mise en ligne
 
