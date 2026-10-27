@@ -1,6 +1,6 @@
 # Contexte du projet (à lire en premier)
 
-Résumé à jour de ce qu'il faut garder en tête. Les documents d'origine de la personne précédente sont conservés dans [`HANDOFF.md`](HANDOFF.md) et [`GUIDE-LANCEMENT.md`](GUIDE-LANCEMENT.md).
+Résumé à jour de ce qu'il faut garder en tête. Le plan d'action est dans [PLAN.md](PLAN.md). Les documents d'origine de la personne précédente sont conservés dans [`HANDOFF.md`](HANDOFF.md) et [`GUIDE-LANCEMENT.md`](GUIDE-LANCEMENT.md).
 
 ## Le projet
 
