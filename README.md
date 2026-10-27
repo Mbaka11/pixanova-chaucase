@@ -15,10 +15,11 @@ docs/                Documentation et archives
 ## Voir la page en local
 
 ```bash
-npx http-server public -p 8080
+npm install   # une seule fois
+npm run dev
 ```
 
-Puis ouvrir http://localhost:8080.
+Ouvrir http://localhost:8080. La page se met à jour automatiquement à chaque sauvegarde dans `public/` (le CSS s'applique sans recharger).
 
 ## Mise en ligne
 
