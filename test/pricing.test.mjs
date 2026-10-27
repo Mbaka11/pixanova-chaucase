@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computePrice, currentPhase, isValidScreens } from '../netlify/functions/lib/pricing.mjs';
+import { computePrice, currentPhase, isValidScreens } from '../server/lib/pricing.mjs';
 
 const EARLY = Date.parse('2026-11-01T12:00:00-05:00');
 const LATE = Date.parse('2026-12-16T00:00:00-05:00');

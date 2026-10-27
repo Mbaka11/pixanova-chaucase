@@ -1,7 +1,7 @@
 # Site statique (dossier public/) + fonctions serveur Netlify (paiement Stripe).
 [build]
   publish = "public"
-  functions = "netlify/functions"
+  functions = "server"
 
 # Les vidéos et images changent rarement : cache navigateur d'une journée.
 [[headers]]

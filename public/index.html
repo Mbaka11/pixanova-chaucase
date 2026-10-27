@@ -269,7 +269,7 @@
     </div>
     <div class="offers" style="color:var(--ink)">
       <div class="offer">
-        <h3>1 écran</h3>
+        <div class="o-top"><h3>1 écran</h3></div>
         <div class="value">Valeur de l'écran : <b>7 000 $</b></div>
         <div class="price"><span class="now" data-p="1"></span><span class="was" data-w="1"></span><span class="unit">avant taxes, pour les 3 jours du salon</span></div>
         <div class="save" data-s="1"></div>
@@ -284,7 +284,7 @@
         <a class="btn dark block" href="#" data-b="1" data-pack="1">Réserver 1 écran</a>
       </div>
       <div class="offer">
-        <h3>2 écrans</h3>
+        <div class="o-top"><h3>2 écrans</h3></div>
         <div class="value">Valeur des deux écrans : <b>14 000 $</b></div>
         <div class="price"><span class="now" data-p="2"></span><span class="was" data-w="2"></span><span class="unit">avant taxes, pour les 3 jours du salon</span></div>
         <div class="save" data-s="2"></div>
@@ -296,23 +296,28 @@
         <div class="amp"><span>Alimentation</span><b>120 V · 10 A</b></div>
         <a class="btn dark block" href="#" data-b="2" data-pack="2">Réserver 2 écrans</a>
       </div>
-      <div class="offer best">
-        <span class="badge">Kiosque 10 × 10</span>
-        <h3>3 écrans</h3>
-        <div class="value">Valeur des trois écrans : <b>21 000 $</b></div>
+      <div class="offer best" id="offer3">
+        <span class="badge" id="o3Badge">Kiosque 10 × 10</span>
+        <div class="o-top"><h3 id="o3Title">3 écrans</h3>
+          <div class="stepper" id="o3Step" role="group" aria-label="Nombre d'écrans">
+            <button type="button" id="o3Minus" aria-label="Retirer un écran">−</button>
+            <b id="o3N" aria-live="polite">3</b>
+            <button type="button" id="o3Plus" aria-label="Ajouter un écran">+</button>
+          </div>
+        </div>
+        <div class="value" id="o3Value">Valeur des trois écrans : <b>21 000 $</b></div>
         <div class="price"><span class="now" data-p="3"></span><span class="was" data-w="3"></span><span class="unit">avant taxes, pour les 3 jours du salon</span></div>
         <div class="save" data-s="3"></div>
         <ul class="checks">
           <li>Tout ce qui est inclus avec 1 écran</li>
-          <li>Trois écrans côte à côte : 288 cm, tout le mur du kiosque</li>
-          <li>Un visuel panoramique de 1548 x 1032 px, ou trois messages</li>
+          <li id="o3Width">Trois écrans côte à côte : 288 cm, tout le mur du kiosque</li>
+          <li id="o3Visual">Un visuel panoramique de 1548 x 1032 px, ou trois messages</li>
         </ul>
-        <div class="amp"><span>Alimentation</span><b>120 V · 17 à 20 A</b></div>
-        <a class="btn block" href="#" data-b="3" data-pack="3">Réserver 3 écrans</a>
+        <div class="amp"><span>Alimentation</span><b id="o3Amp">120 V · 17 à 20 A</b><small id="o3AmpNote" hidden></small></div>
+        <a class="btn block" href="#" data-b="3" data-pack="3" id="o3Btn">Réserver 3 écrans</a>
       </div>
     </div>
     <p class="swipe-h">Glissez pour comparer les 3 offres &rsaquo;</p>
-    <p class="more-l">Besoin de plus de 3 écrans? Même prix par écran que le forfait 3 : <b data-unit>530 $</b>. <a href="#" id="moreLink" data-pack="more">Choisir la quantité</a></p>
   </div>
 </section>
 

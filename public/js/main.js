@@ -1,5 +1,10 @@
 const fm0 = c => (c/100).toLocaleString('fr-CA',{maximumFractionDigits:0}).replace(/[  ]/g,' ')+' $';
-const P = {1:{early:59900,reg:79500}, 2:{early:109500,reg:139500}, 3:{early:159000,reg:195000}};
+/* Prix en cents, avant taxes. 3 écrans et plus : quantité × tarif par écran (mêmes règles que le serveur). */
+const P = {1:{early:59900,reg:79500}, 2:{early:109500,reg:139500}};
+const PER = {early:53000, reg:65000};
+const MAX_SCREENS = 10, SCREEN_VALUE = 700000, SCREEN_W = 96, SCREEN_PX = 516;
+const priceFor = (n,ph) => n<=2 ? P[n][ph] : n*PER[ph];
+const o3 = {n:3};
 const phaseNow = () => Date.now() > Date.parse(CONFIG.earlyDeadline) ? 'reg' : 'early';
 const S = {stock: Math.max(0, CONFIG.total-CONFIG.reserved), phase: phaseNow()};
 const payUrl = k => (CONFIG.links[S.phase==='early'?'early':'regular']||{})[k] || '';
@@ -48,6 +53,46 @@ function route(){
 }
 window.addEventListener('hashchange',route);
 
+
+/* ---------- Fiches d'offres : 1 écran, 2 écrans, 3 écrans et plus (compteur) ---------- */
+const WORDS = {3:'Trois',4:'Quatre',5:'Cinq',6:'Six',7:'Sept',8:'Huit',9:'Neuf',10:'Dix'};
+function renderOffers(left, early){
+  const card = (n, count) => {
+    const now = priceFor(count, S.phase), was = priceFor(count, 'reg'), save = was - priceFor(count, 'early');
+    document.querySelector('[data-p="'+n+'"]').textContent = fm0(now);
+    const w = document.querySelector('[data-w="'+n+'"]'); w.textContent = fm0(was); w.style.display = early ? '' : 'none';
+    const sv = document.querySelector('[data-s="'+n+'"]'); sv.style.display = early ? '' : 'none';
+    sv.textContent = 'Économisez '+fm0(save)+' avant le 15 décembre';
+    const bt = document.querySelector('[data-b="'+n+'"]');
+    bt.dataset.pack = count;
+    if(left >= count){ bt.textContent = count===1 ? 'Réserver 1 écran' : 'Réserver '+count+' écrans'; bt.setAttribute('href', payUrl(count)||'#'); }
+    else { bt.textContent = left===0 ? "Liste d'attente" : 'Seulement '+left+' restant'+(left>1?'s':'')+" : liste d'attente"; bt.setAttribute('href','#/liste-attente'); }
+  };
+  card(1, 1); card(2, 2);
+
+  // 3e fiche : compteur de 3 à 10 écrans (limité par le stock restant)
+  const maxN = Math.max(3, Math.min(MAX_SCREENS, left));
+  o3.n = Math.min(Math.max(o3.n, 3), maxN);
+  const n = o3.n, cm = n*SCREEN_W;
+  card(3, n);
+  document.getElementById('o3N').textContent = n;
+  document.getElementById('o3Title').textContent = n+' écrans';
+  document.getElementById('o3Minus').disabled = n <= 3;
+  document.getElementById('o3Plus').disabled = n >= maxN;
+  document.getElementById('o3Step').style.display = left < 3 ? 'none' : '';
+  document.getElementById('o3Value').innerHTML = 'Valeur des '+(WORDS[n]||n).toLowerCase()+' écrans : <b>'+fm0(n*SCREEN_VALUE)+'</b>';
+  document.getElementById('o3Width').textContent = (WORDS[n]||n)+' écrans côte à côte : '+cm+' cm'+(n===3?', tout le mur du kiosque':'');
+  document.getElementById('o3Visual').textContent = 'Un visuel panoramique de '+(n*SCREEN_PX)+' x 1032 px, ou '+(WORDS[n]||n).toLowerCase()+' messages';
+  // Intensité : 17 à 20 A pour 3 écrans, proportionnel au-delà (à confirmer avec Anis)
+  const lo = Math.ceil(n*17/3), hi = Math.ceil(n*20/3);
+  document.getElementById('o3Amp').textContent = '120 V · '+lo+' à '+hi+' A';
+  const note = document.getElementById('o3AmpNote');
+  note.hidden = n < 4; note.textContent = 'À répartir sur plusieurs prises du kiosque.';
+  document.getElementById('o3Badge').textContent = n===3 ? 'Kiosque 10 × 10' : 'Grand kiosque';
+}
+document.getElementById('o3Minus').addEventListener('click',()=>{ o3.n--; renderAll(); track('screens_change',{screens:o3.n}); });
+document.getElementById('o3Plus').addEventListener('click',()=>{ o3.n++; renderAll(); track('screens_change',{screens:o3.n}); });
+
 /* ---------- Prix, compteur, boutons ---------- */
 function renderAll(){
   S.phase=phaseNow();
@@ -58,18 +103,7 @@ function renderAll(){
   b.innerHTML = early
    ? 'Early bird : '+(dl>1?'plus que <b>'+dl+' jours</b>':'<b>dernier jour</b>')+' <span class="hm">pour profiter de</span><span class="dm">·</span> <b>599 $</b> <s>795 $</s><span class="hm"> par écran</span>'
    : 'La période early bird est terminée. Prix régulier : <b>795 $ par écran</b>.';
-  [1,2,3].forEach(n=>{
-    document.querySelector('[data-p="'+n+'"]').textContent=fm0(P[n][S.phase]);
-    const w=document.querySelector('[data-w="'+n+'"]'); w.textContent=fm0(P[n].reg); w.style.display=early?'':'none';
-    const sv=document.querySelector('[data-s="'+n+'"]'); sv.style.display=early?'':'none';
-    sv.textContent='Économisez '+fm0(P[n].reg-P[n].early)+' avant le 15 décembre';
-    const bt=document.querySelector('[data-b="'+n+'"]');
-    if(left>=n){ bt.textContent=n==1?'Réserver 1 écran':'Réserver '+n+' écrans'; bt.setAttribute('href',payUrl(n)||'#'); }
-    else { bt.textContent=left===0?'Liste d\'attente':'Seulement '+left+' restant'+(left>1?'s':'')+' : liste d\'attente'; bt.setAttribute('href','#/liste-attente'); }
-  });
-  const ml=document.getElementById('moreLink');
-  if(left>=4){ ml.textContent='Choisir la quantité'; ml.setAttribute('href',payUrl('more')||'#'); }
-  else { ml.textContent='Liste d\'attente'; ml.setAttribute('href','#/liste-attente'); }
+  renderOffers(left, early);
   document.querySelector('[data-big]').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
   document.querySelector('[data-punch]').innerHTML='Pour <em>'+fm0(P[1][S.phase]-35000)+' de plus</em>, passez d\'un message figé à un écran de 7 000 $ de valeur, en boucle, pendant 3 jours.';
   document.getElementById('pbNow').textContent=fm0(P[1][S.phase]);
@@ -77,7 +111,6 @@ function renderAll(){
   pw.style.display=ps.style.display=early?'':'none';
   pw.textContent=fm0(P[1].reg); ps.textContent='Économisez '+fm0(P[1].reg-P[1].early);
   document.getElementById('pbTag').textContent=early?'Prix early bird':'Prix régulier';
-  document.querySelectorAll('[data-unit]').forEach(e=>e.textContent=fm0(Math.round(P[3][S.phase]/3)));
   document.getElementById('left').textContent=left;
   const sg=document.getElementById('segs'); if(!sg.children.length){ for(let i=0;i<CONFIG.total;i++) sg.appendChild(document.createElement('i')); }
   [...sg.children].forEach((e,i)=>{ e.className=i<left?'on'+(i===left-1?' last':''):'off'; });

@@ -30,7 +30,7 @@ Résumé à jour de ce qu'il faut garder en tête. Le plan d'action est dans [PL
 
 | Sujet | Décision |
 |---|---|
-| Hébergement | **Netlify** (site statique `public/` + fonctions `netlify/functions/`) |
+| Hébergement | **Netlify** (site statique `public/` + fonctions `server/`) |
 | Paiement | **Stripe Checkout**, une session créée par le serveur à partir du choix du client. Pas de 12 liens de paiement. |
 | Calcul du prix | Toujours côté serveur (le navigateur envoie seulement le nombre d'écrans) |
 | Montage graphique | **En pause** pour l'instant (150 $ simple / 350 $ animé, +100 $ à 2 écrans ou plus) |
@@ -46,7 +46,7 @@ public/                 Ce qui est mis en ligne
   js/config.js          Réglages modifiables (stock, date early bird, statistiques)
   js/main.js            Comportement de la page
   assets/               Images, logos, vidéos compressées pour le web
-netlify/functions/      Code serveur (paiement Stripe, webhook) — à venir
+server/      Code serveur : paiement Stripe, stock, webhook
 docs/                   Documentation
   archive/              Ancienne maquette et ancien plan de plateforme
 media-sources/          Vidéos originales en pleine qualité (non versionnées)

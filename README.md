@@ -8,7 +8,7 @@ Commencer par [`docs/CONTEXTE.md`](docs/CONTEXTE.md) : prix, décisions et proch
 
 ```text
 public/              Site mis en ligne (HTML, CSS, JS, assets)
-netlify/functions/   Code serveur : paiement Stripe (à venir)
+server/   Code serveur : réservation et paiement Stripe
 docs/                Documentation et archives
 ```
 
@@ -23,7 +23,7 @@ Ouvrir http://localhost:8080. La page se met à jour automatiquement à chaque s
 
 ## Mise en ligne
 
-Netlify lit `netlify.toml` : le dossier `public/` est publié tel quel et les fonctions viennent de `netlify/functions/`. Les clés Stripe se configurent dans Netlify (voir `.env.example`), jamais dans le dépôt.
+Netlify lit `netlify.toml` : le dossier `public/` est publié tel quel et les fonctions viennent de `server/`. Les clés Stripe se configurent dans Netlify (voir `.env.example`), jamais dans le dépôt.
 
 ## Réglages rapides
 

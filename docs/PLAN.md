@@ -54,12 +54,12 @@ Note de prix : 3 écrans = 3 × 530 $ et 3 × 650 $. Le forfait de 3 est donc le
 
 ### 3. Bloc de réservation unique
 
-- [ ] Remplacer les 3 cartes par un bloc : choix du nombre d'écrans (1 à 10), prix par écran, économie, total avant taxes, mention « taxes ajoutées au paiement », bouton « Réserver ».
+- [x] Fiches d'offres : trois fiches identiques, la 3ᵉ devient un compteur de 3 à 10 écrans (prix, économie, largeur, visuel, alimentation mis à jour). Lien « plus de 3 écrans » retiré. Reste à brancher les boutons à `POST /api/checkout`.
 - [ ] Le choix est lu directement par le paiement : la page envoie seulement `{ screens: N }` au serveur.
 - [ ] Les boutons « Réserver » des autres sections font défiler vers ce bloc.
 - [ ] Désactiver les quantités qui dépassent le stock restant.
 
-### 4. Fonctions serveur (`netlify/functions/`)
+### 4. Fonctions serveur (`server/`)
 
 - [ ] `get-stock` : compte les écrans payés et en cours de paiement dans Stripe (20 − vendus − en attente). Remplace `reserved` à la main.
 - [ ] `create-checkout` : recalcule le prix selon l'heure de Montréal, vérifie le stock, crée la session Stripe (prix en `price_data`, TPS et TVQ, champs « numéro de kiosque » et « entreprise », adresse, téléphone, expiration 30 min, `metadata.screens`). Vérifie le stock une seconde fois après la création pour les achats simultanés.

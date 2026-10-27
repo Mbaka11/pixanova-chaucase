@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 process.env.STRIPE_TAX_RATE_TPS = 'txr_tps';
 process.env.STRIPE_TAX_RATE_TVQ = 'txr_tvq';
 process.env.SITE_URL = 'https://exemple.test';
-const { countTakenScreens } = await import('../netlify/functions/lib/stock.mjs');
-const { makeHandler } = await import('../netlify/functions/create-checkout.mjs');
+const { countTakenScreens } = await import('../server/lib/stock.mjs');
+const { makeHandler } = await import('../server/create-checkout.mjs');
 
 const sess = (screens, o = {}) => ({
   metadata: { event: 'chaucase-2027', screens: String(screens) },
