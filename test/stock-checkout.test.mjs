@@ -4,6 +4,7 @@ import { getEvent } from '../config/catalog.mjs';
 import { countTakenScreens, getStock, peakUsageForPeriod } from '../server/lib/stock.mjs';
 import { makeHandler } from '../server/create-checkout.mjs';
 import stockHandler from '../server/get-stock.mjs';
+import {lineTax} from '../shared/order.mjs';
 process.env.STRIPE_TAX_RATE_TPS = 'txr_tps';
 process.env.STRIPE_TAX_RATE_TVQ = 'txr_tvq';
 process.env.SITE_URL = 'https://exemple.test';
@@ -15,9 +16,9 @@ const sess = (screens, overrides = {}) => ({
 });
 function fakeStripe(sessions) {
   const created = [], expired = [];
-  return { created, expired, checkout: { sessions: {
+  return { created, expired, taxRates: {retrieve:async id=>({active:true,inclusive:false,percentage:id==='txr_tps'?5:9.975})}, checkout: { sessions: {
     list: () => (async function* () { for (const s of sessions) yield s; })(),
-    create: async (p) => { created.push(p); sessions.push({ id: 'cs_new', status: 'open', payment_status: 'unpaid', metadata: p.metadata }); return { id: 'cs_new', url: 'https://checkout.test/cs_new' }; },
+    create: async (p) => { created.push(p); sessions.push({ id: 'cs_new', status: 'open', payment_status: 'unpaid', metadata: p.metadata }); return { id: 'cs_new', url: 'https://checkout.test/cs_new', amount_total:p.line_items.reduce((sum,line)=>{const cents=line.quantity*line.price_data.unit_amount;return sum+cents+lineTax(cents,5)+lineTax(cents,9.975);},0) }; },
     expire: async (id) => { expired.push(id); },
   } } };
 }

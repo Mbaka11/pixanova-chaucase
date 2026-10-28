@@ -5,15 +5,20 @@ Les événements utilisent tous ces mêmes fonctions Netlify. Aucun serveur à d
 | Route | Entrée | Rôle |
 |---|---|---|
 | `GET /api/stock?event=chaucase-2027` | Identifiant d’événement | Disponibilité du parc commun sur sa période de location |
-| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "language": "en" }` | Prix et dates tirés du catalogue, session Stripe de test |
+| `POST /api/quote` | `{ "eventId": "chaucase-2027", "screens": 3, "montage": "simple" }` | Récapitulatif et taxes vérifiées, sans création de session ni blocage |
+| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "montage": "simple", "language": "en", "expectedTotalCents": 211554 }` | Une session Stripe avec écrans et montage; tous les prix recalculés |
 | `GET /api/reservation?event=...&session_id=...` | Événement + session Stripe | Vérification du paiement; récapitulatif sans donnée personnelle |
 | `POST /api/stripe-webhook` | Événement signé Stripe | Notification de paiement confirmé, événement identifié par métadonnées |
 
 Les événements inconnus ou inactifs sont refusés. Les réservations ferment à `bookingClosesAt`, sinon au début de mise à disposition du matériel. Le client n’envoie pas de prix ni de dates faisant autorité. `language` est facultatif (français par défaut), limité à `fr` / `en` et conservé dans les métadonnées et les URLs de retour. Seuls les libellés et la locale Checkout changent, jamais le prix ou le stock.
 
+`montage` est facultatif (`none` par défaut), strictement limité à `none`, `simple`, `animated`. Le supplément pour plusieurs écrans n’est ajouté qu’une fois. Les métadonnées `montage`, `montage_cents`, `rental_cents` figent le choix et les prix payés; seul `screens` consomme du stock.
+
+`expectedTotalCents`, facultatif pour compatibilité, est envoyé par la modale : un écart renvoie HTTP 409 `quote_changed` **sans créer de session**. Le montant Stripe créé est aussi comparé au total calculé; en cas d’écart la session est expirée et aucune redirection n’est renvoyée. `totalCents` dans les réponses quote/checkout comprend les taxes; `subtotalCents` les exclut.
+
 ## Configuration unique
 
-`config/platform.json` : total d’écrans physiques (20), durée de blocage Stripe, coordonnées, devise.
+`config/platform.json` : total d’écrans physiques (20), durée de blocage Stripe, coordonnées, devise, montage et pourcentages TPS/TVQ. `lib/taxes.mjs` vérifie les taux Stripe actifs et exclusifs (cache de 60 secondes).
 
 `config/events/*.json` et `config/catalog.mjs` : événements, périodes et prix. `shared/events.mjs` fournit validation, dates et formule de prix à la fois au navigateur et au serveur.
 
@@ -42,6 +47,6 @@ npm test
 
 Les tests couvrent le catalogue, les dates et tarifs de différents salons, le chevauchement, la réutilisation des écrans, les anciennes sessions, les périodes figées, l’expiration et le rejet des clés réelles.
 
-Le parcours réel **en bac à sable** a été vérifié : paiement accepté puis remboursé, refus de carte, expiration, compteur 4 écrans, disponibilité selon le calendrier et webhook signé. Aucun paiement réel n’a été effectué et le stock de test est revenu à 20 / 20.
+Le parcours **en bac à sable** a été vérifié : paiement accepté puis remboursé, refus de carte, expiration, compteur 4 écrans, calendrier et webhook signé. Le montage a ensuite été vérifié dans 9 combinaisons (1/2/3 écrans × sans/simple/animé), puis avec un paiement combiné réussi et remboursé. Seules les sessions créées par ces essais sont nettoyées; les réservations préexistantes sont conservées. Aucun paiement réel.
 
 Commandes et matrice d’essais : [docs/STRIPE-LOCAL.md](../docs/STRIPE-LOCAL.md). Les paiements réels restent bloqués; la réservation atomique et les autres limites listées ci-dessus doivent encore être traitées.

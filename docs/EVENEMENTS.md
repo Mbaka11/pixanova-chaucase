@@ -2,7 +2,7 @@
 
 ## Ce qui est partagé
 
-`config/platform.json` contient : nom de plateforme, langue par défaut, fuseau de référence, devise, **nombre total d’écrans physiques**, durée de blocage pendant Checkout, logo Pixanova, contact et caractéristiques des écrans.
+`config/platform.json` contient : nom de plateforme, langue par défaut, fuseau de référence, devise, **nombre total d’écrans physiques**, durée de blocage pendant Checkout, logo Pixanova, contact et caractéristiques des écrans, prix du montage et pourcentages TPS/TVQ.
 
 Ne pas dupliquer les 20 écrans dans chaque salon. Tous les événements interrogent le même serveur et le même parc.
 
@@ -54,9 +54,21 @@ Prix **en cents CAD**, avant taxes, dans deux groupes :
 - `early.one`, `early.two`, `early.perScreen`;
 - `regular.one`, `regular.two`, `regular.perScreen`.
 
-Pour 1 ou 2 écrans, le prix est celui du forfait; dès 3, c’est la quantité multipliée par `perScreen`. Le navigateur et le serveur utilisent la même configuration et la même formule. Le serveur ignore tout montant envoyé par le client.
+Pour 1 ou 2 écrans, le prix est celui du forfait; dès 3, c’est la quantité multipliée par `perScreen`. Le navigateur et le serveur utilisent la même configuration et la même formule. Le serveur recalcule tous les montants; les prix envoyés par le client ne font jamais autorité. `expectedTotalCents` sert seulement à refuser un ancien total avant de créer une session, jamais à fixer un prix.
 
 `maxScreensPerOrder` limite le compteur de la troisième fiche. `active: false` retire le salon du catalogue et interdit de nouvelles sessions; les réservations existantes continuent d’occuper le parc.
+
+## Montage facultatif et taxes
+
+Dans `config/platform.json`, les montants sont en cents CAD :
+
+- `montage.simpleCents: 15000` et `animatedCents: 35000` pour 1 écran;
+- `montage.multipleScreensExtraCents: 10000`, ajouté **une seule fois** dès 2 écrans;
+- `taxes.gstPercent: 5`, `qstPercent: 9.975`.
+
+`none` est gratuit et choisi par défaut; seules les valeurs `none`, `simple`, `animated` sont acceptées. Le montage forme une ligne supplémentaire dans **le même Checkout**, sans consommer d’écran. Aucun nouvel achat n’est proposé sur la confirmation.
+
+Les deux identifiants de taux restent privés dans `.env` / Netlify. Le serveur vérifie que les taux Stripe sont actifs, exclusifs et correspondent aux pourcentages configurés. Il arrondit chaque taxe de chaque ligne comme Stripe, pas le panier global. La réponse `/api/quote` ne crée aucun blocage.
 
 ## Français / anglais
 
@@ -72,7 +84,7 @@ Les vidéos et les logos restent dans leur langue d’origine. La page anglaise 
 
 ## Génération et aperçu
 
-`npm run build` génère `public/js/catalog-data.js` et copie les utilitaires publics. Ces fichiers, ainsi que la copie publique `public/js/i18n.mjs`, sont ignorés par Git; ils sont reconstruits automatiquement sur Netlify.
+`npm run build` génère `public/js/catalog-data.js` et copie les utilitaires publics. Ces fichiers, ainsi que les copies publiques `public/js/i18n.mjs` et `public/js/montage.mjs`, sont ignorés par Git; ils sont reconstruits automatiquement sur Netlify.
 
 `npm run dev` surveille `config/` et `shared/`, regénère ces fichiers puis recharge la page. Si le JSON est invalide, le terminal indique l’erreur et il faut la corriger avant de continuer.
 

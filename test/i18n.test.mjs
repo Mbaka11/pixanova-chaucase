@@ -34,7 +34,7 @@ test('dictionnaires dynamiques ont les mêmes clés; traduction de l’animation
 });
 test('Stripe : anglais, libellés et retours conservés; montant et dates identiques',async()=>{
  let payload;
- const stripe={checkout:{sessions:{list:()=> (async function*(){})(),create:async p=>{payload=p;return {id:'cs_example',url:'https://checkout.example.test'};}}}};
+ const stripe={taxRates:{retrieve:async id=>({active:true,inclusive:false,percentage:id==='txr_tps'?5:9.975})},checkout:{sessions:{list:()=> (async function*(){})(),create:async p=>{payload=p;return {id:'cs_example',url:'https://checkout.example.test',amount_total:125898};}}}};
  const request=(body)=>new Request('https://example.test/api/checkout',{method:'POST',body:JSON.stringify(body)});
  const handler=makeHandler(()=>stripe,now);
  const response=await handler(request({eventId:event.id,screens:2,language:'en'}));

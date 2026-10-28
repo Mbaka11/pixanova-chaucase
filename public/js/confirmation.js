@@ -23,7 +23,7 @@ export async function verifyConfirmation(config) {
     if (ticket !== invocation) return;
     if (data.eventId !== config.event.id || data.currency !== 'cad') throw new Error('Unexpected reservation');
     if (data.status === 'paid') {
-      show(ui.paymentConfirmed, ui.paidDetail, ui.paidSummary(data.screens, money(data.subtotalCents, config.language, true), money(data.taxCents, config.language, true), money(data.totalCents, config.language, true)));
+      show(ui.paymentConfirmed, ui.paidDetail, ui.paidSummary(data.screens, money(data.subtotalCents, config.language, true), money(data.taxCents, config.language, true), money(data.totalCents, config.language, true))+' · '+ui.montageLabel(data.montage)+(data.montageCents?' : '+money(data.montageCents, config.language, true):''));
       document.body.classList.remove('confirmation-pending');
     } else if (data.status === 'refunded') show(ui.paymentRefunded, ui.refundedDetail);
     else if (data.status === 'expired') show(ui.paymentExpired, ui.expiredDetail);

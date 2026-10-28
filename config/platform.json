@@ -8,5 +8,7 @@
   "contact": { "email": "info@pixanova.ca", "phone": "+1 (438) 491-0384" },
   "brand": { "logo": "/assets/images/px-crop-sm.png", "website": "https://pixanova.ca/" },
   "screen": { "valueCents": 700000, "widthCm": 96, "widthPx": 516, "heightPx": 1032 },
+  "montage": { "simpleCents": 15000, "animatedCents": 35000, "multipleScreensExtraCents": 10000 },
+  "taxes": { "gstPercent": 5, "qstPercent": 9.975 },
   "analytics": { "ga4": "", "clarity": "", "metaPixel": "" }
 }

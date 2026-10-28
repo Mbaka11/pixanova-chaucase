@@ -10,6 +10,13 @@ test('confirmation vérifiée et récapitulatif sans donnée personnelle',async(
  assert.equal(JSON.stringify(body).includes('private'),false);assert.equal(JSON.stringify(body).includes('5551234567'),false);
  assert.equal(response.headers.get('cache-control'),'no-store');
 });
+test('le montage et son prix payé sont conservés sans recalcul au tarif courant',async()=>{
+ const response=await handler({...session,metadata:{...session.metadata,montage:'simple',montage_cents:'25000'},amount_subtotal:134500,amount_total:154642})(request());
+ const body=await response.json();assert.equal(body.montage,'simple');assert.equal(body.montageCents,25000);assert.equal(body.totalCents,154642);
+});
+test('métadonnées de montage incohérentes refusées',async()=>{
+ for(const extra of [{montage:'oops'},{montage:'none',montage_cents:'1'},{montage:'simple',montage_cents:'-1'},{montage:'simple',montage_cents:'0'}])assert.equal((await handler({...session,metadata:{...session.metadata,...extra}})(request())).status,404);
+});
 test('mauvais événement, autre parc ou métadonnées corrompues refusés',async()=>{
  for(const metadata of [{...session.metadata,event:'autre'},{...session.metadata,inventory_pool:'autre'},{...session.metadata,screens:'-1'}])assert.equal((await handler({...session,metadata})(request())).status,404);
 });

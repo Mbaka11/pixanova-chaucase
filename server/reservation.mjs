@@ -1,5 +1,6 @@
 import { getEvent, INVENTORY_POOL, TOTAL_SCREENS } from './lib/config.mjs';
 import { getStripe, json } from './lib/http.mjs';
+import { isValidMontage } from '../shared/montage.mjs';
 
 // Retourne uniquement un récapitulatif non personnel, jamais le courriel, l’adresse ou les détails de carte.
 export const makeHandler = (stripeFactory = getStripe) => async (req) => {
@@ -13,10 +14,13 @@ export const makeHandler = (stripeFactory = getStripe) => async (req) => {
     const metadata = session.metadata || {};
     const screens = Number(metadata.screens);
     if (metadata.event !== event.id || (metadata.inventory_pool && metadata.inventory_pool !== INVENTORY_POOL) || !Number.isInteger(screens) || screens < 1 || screens > TOTAL_SCREENS) return json({ error: 'reservation_not_found' }, 404);
+    const montage = metadata.montage ?? 'none';
+    const montageCents = Number(metadata.montage_cents ?? 0);
+    if (!isValidMontage(montage) || !Number.isSafeInteger(montageCents) || montageCents < 0 || montageCents > session.amount_subtotal || (montage === 'none' ? montageCents !== 0 : montageCents === 0)) return json({ error: 'reservation_not_found' }, 404);
     const refunded = session.payment_intent?.latest_charge?.refunded === true;
     const status = refunded ? 'refunded' : session.status === 'complete' && session.payment_status === 'paid' ? 'paid' : session.status === 'expired' ? 'expired' : 'pending';
     return json({
-      eventId: event.id, status, screens, currency: session.currency,
+      eventId: event.id, status, screens, montage, montageCents, currency: session.currency,
       subtotalCents: session.amount_subtotal, taxCents: session.total_details?.amount_tax ?? 0, totalCents: session.amount_total,
     });
   } catch (error) {

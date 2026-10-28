@@ -1,5 +1,6 @@
 import { getEvent, INVENTORY_POOL } from './lib/config.mjs';
 import { getStripe, json } from './lib/http.mjs';
+import { copy } from '../shared/i18n.mjs';
 
 /** Avertit l'équipe par courriel (Resend) si configuré, sinon écrit dans les journaux. */
 async function notifyTeam(session) {
@@ -10,6 +11,7 @@ async function notifyTeam(session) {
   const text = [
     `Nouvelle réservation ${label}`,
     `Écrans : ${session.metadata.screens}`,
+    `Montage : ${copy('fr').montageLabel(session.metadata.montage || 'none')}`,
     `Total payé : ${(session.amount_total / 100).toFixed(2)} $ CAD (taxes incluses)`,
     `Entreprise : ${fields.entreprise || '—'}`,
     `Kiosque : ${fields.kiosque || '—'} (à vérifier)`,

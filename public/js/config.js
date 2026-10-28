@@ -34,6 +34,9 @@ if (!event) {
     '[data-artwork-date]': labels.artworkDeadline, '[data-artwork-date-full]': labels.artworkDeadlineFull,
     '[data-installation-date]': labels.installation, '[data-start-date]': labels.starts,
     '[data-screen-value]': money(platform.screen.valueCents),
+    '[data-montage-simple]': ui.from(money(platform.montage.simpleCents)),
+    '[data-montage-animated]': ui.from(money(platform.montage.animatedCents)),
+    '#montageBookingNote': ui.montageBefore+' '+ui.montageSurcharge(money(platform.montage.multipleScreensExtraCents)),
     '[data-contact-phone]': platform.contact.phone,
     '#twoScreenValue': money(platform.screen.valueCents * 2),
     '#eventDates': `${labels.fullName} · ${event.city} · ${labels.period}`,
@@ -59,8 +62,6 @@ if (!event) {
     analytics: platform.analytics,
     waitlistEmail: platform.contact.email,
     bookingOpen: bookingIsOpen(event),
-    // Le paiement reste désactivé pendant la généralisation de l'inventaire.
-    links: { early: {}, regular: {}, montage: {} },
   };
   installLanguageSwitcher();
   if (language === 'en') {

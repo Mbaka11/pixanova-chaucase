@@ -14,6 +14,7 @@
 /public/js/catalog-data.js
 /public/js/events-shared.js
 /public/js/i18n.mjs
+/public/js/montage.mjs
 
 # Netlify (CLI locale)
 .netlify/

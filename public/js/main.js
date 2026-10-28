@@ -2,6 +2,7 @@ import { currentPhase, bookingIsOpen } from './events-shared.js';
 import { copy, money } from './i18n.mjs';
 import { initTestimonials } from './testimonials.js';
 import { verifyConfirmation } from './confirmation.js';
+import { createBookingDialog } from './booking-dialog.js';
 const { event: EVENT, platform: PLATFORM, labels: LABELS, language: LANGUAGE } = window.CONFIG;
 const ui = copy(LANGUAGE);
 const fm0 = c => money(c, LANGUAGE);
@@ -17,7 +18,6 @@ const priceFor = (n,ph) => n<=2 ? P[n][ph] : n*PER[ph];
 const o3 = {n:3};
 const phaseNow = () => currentPhase(EVENT)==='regular' ? 'reg' : 'early';
 const S = {stock: null, phase: phaseNow(), open: bookingIsOpen(EVENT)};
-const payUrl = k => (CONFIG.links[S.phase==='early'?'early':'regular']||{})[k] || '';
 
 /* ---------- Statistiques (avec consentement) ---------- */
 const A = CONFIG.analytics, anyA = !!(A.ga4||A.clarity||A.metaPixel);
@@ -77,7 +77,7 @@ function renderOffers(left, early){
     bt.dataset.pack = count;
     bt.setAttribute('aria-disabled', String(!S.open));
     if(!S.open){ bt.textContent=ui.closed; bt.setAttribute('href','#'); }
-    else if(left >= count){ bt.textContent = ui.reserve(count); bt.setAttribute('href', payUrl(count)||'#'); }
+    else if(left >= count){ bt.textContent = ui.reserve(count); bt.setAttribute('href', '#'); }
     else { bt.textContent = left===0 ? ui.waitlistShort : ui.onlyLeft(left); bt.setAttribute('href','#/liste-attente'); }
   };
   card(1, 1); card(2, 2);
@@ -141,7 +141,6 @@ function renderAll(){
   document.querySelector('[data-final]').textContent=!S.open?ui.closedFor(LABELS.fullName):(early?ui.deadline(LABELS.earlyDeadline):'')+(S.stock===null?ui.datesAvailability:left===0?ui.allReserved:ui.remaining(left)+'.');
   document.getElementById('stkP').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
   document.getElementById('stkL').textContent=!S.open?ui.closed:S.stock===null?ui.stockUnknown:left===0?ui.soldOut:ui.remaining(left);
-  document.querySelectorAll('[data-mlink]').forEach(a=>a.setAttribute('href',(CONFIG.links.montage||{})[a.dataset.mlink]||'#'));
   const wl=document.getElementById('wlMail');
   if(wl) wl.setAttribute('href','mailto:'+CONFIG.waitlistEmail+'?subject='+encodeURIComponent(ui.waitSubject(LABELS.fullName))+'&body='+encodeURIComponent(ui.waitBody));
 }
@@ -157,56 +156,18 @@ async function loadStock(){
   } catch { /* Aperçu statique : ne jamais inventer un stock disponible. */ }
 }
 
-/* Clics : paiement et boutons principaux */
+const bookingDialog = createBookingDialog(CONFIG, {refreshStock:loadStock,onCheckout:details=>track('begin_checkout',details)});
+
+/* Clics : récapitulatif et boutons principaux */
 document.addEventListener('click',e=>{
-  const a=e.target.closest('a[data-pack],a[data-mlink]');
+  const a=e.target.closest('a[data-pack]');
   if(a){
     const href=a.getAttribute('href');
     if(a.getAttribute('aria-disabled')==='true'){e.preventDefault();return;}
-    if(a.hasAttribute('data-pack') && href!=='#/liste-attente'){ e.preventDefault(); void startCheckout(Number(a.dataset.pack)); return; }
-    if(!href||href==='#'){ e.preventDefault(); alert(ui.paymentPending); return; }
-    if(/^https?:/.test(href)) track('begin_checkout',{pack:a.dataset.pack||a.dataset.mlink,phase:S.phase});
+    if(a.hasAttribute('data-pack') && href!=='#/liste-attente'){ e.preventDefault(); bookingDialog.open(Number(a.dataset.pack),a); return; }
     return;
   }
   const c=e.target.closest('[data-cta]'); if(c) track('cta_click',{label:(c.dataset.t||c.textContent).trim()});
-});
-
-let checkoutPending = false;
-async function startCheckout(screens){
-  if(checkoutPending) return;
-  checkoutPending = true;
-  let redirecting = false;
-  let status = document.getElementById('checkoutStatus');
-  if(!status){ status=document.createElement('p'); status.id='checkoutStatus'; status.className='checkout-status'; status.setAttribute('role','status'); status.setAttribute('aria-live','polite'); document.querySelector('.offers').after(status); }
-  status.textContent=ui.checkoutLoading;
-  document.querySelectorAll('[data-pack]').forEach(a=>{ a.setAttribute('aria-disabled','true'); a.classList.add('checkout-busy'); });
-  try {
-    const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:EVENT.id,screens,language:LANGUAGE})});
-    const data=await response.json();
-    if(!response.ok){
-      if(data.error==='not_enough_stock'){await loadStock();throw new Error(ui.checkoutStock);}
-      if(data.error==='booking_closed')throw new Error(ui.checkoutClosed);
-      if(['production_inventory_not_ready','tax_rates_not_configured'].includes(data.error))throw new Error(ui.checkoutSetup);
-      throw new Error(ui.checkoutError);
-    }
-    const url=new URL(data.url);
-    if(url.protocol!=='https:' || url.hostname!=='checkout.stripe.com')throw new Error(ui.checkoutError);
-    track('begin_checkout',{screens,phase:data.phase});
-    window.location.assign(url.href);
-    redirecting=true;
-  } catch(error){
-    const known=[ui.checkoutStock,ui.checkoutClosed,ui.checkoutSetup,ui.checkoutError];
-    status.textContent=known.includes(error.message)?error.message:ui.checkoutError;
-  } finally {
-    if(!redirecting){
-      checkoutPending=false;
-      document.querySelectorAll('[data-pack]').forEach(a=>a.classList.remove('checkout-busy'));
-      renderAll();
-    }
-  }
-}
-window.addEventListener('pageshow',event=>{
-  if(event.persisted){checkoutPending=false;document.querySelectorAll('[data-pack]').forEach(a=>a.classList.remove('checkout-busy'));renderAll();void loadStock();}
 });
 
 /* Compte à rebours en direct jusqu'à la fin de l'early bird */

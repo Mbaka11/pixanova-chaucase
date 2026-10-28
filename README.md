@@ -2,7 +2,7 @@
 
 Plateforme de location d’écrans LED pour exposants : un accueil pour choisir son événement, un modèle de page réutilisable et un serveur commun de réservation Stripe.
 
-**État :** configuration multiévénement et parcours Stripe de test opérationnels. Boutons branchés, confirmation vérifiée côté serveur, webhook local signé, paiement et remboursement de test validés. Les ventes réelles restent bloquées tant que le stock n’est pas réservé de manière atomique.
+**État :** configuration multiévénement et parcours Stripe de test opérationnels. Récapitulatif FR/EN avant Stripe, montage facultatif et écrans payés ensemble, confirmation vérifiée côté serveur. Paiement combiné et remboursement de test validés. Les ventes réelles restent bloquées tant que le stock n’est pas réservé de manière atomique.
 
 ## Développement
 
@@ -35,12 +35,15 @@ config/
   events/chaucase-2027.json   Identité, dates, prix et médias du salon
   catalog.mjs                Registre des événements
 shared/events.mjs            Validation, dates, prix (communs au site et au serveur)
+shared/montage.mjs           Options et prix du montage
+shared/order.mjs             Total de commande et taxes arrondies par ligne
 public/
   index.html                 Sélection de l’événement
   evenement.html             Modèle commun (design des trois fiches conservé)
   js/catalog.js              Accueil
   js/config.js               Alimentation du modèle par l’événement choisi
   js/main.js                 Animation, fiches, navigation
+  js/booking-dialog.js       Récapitulatif accessible avant paiement
   css/                       Styles
   assets/                    Images et vidéos web
 server/                      Fonctions Stripe et disponibilité partagée

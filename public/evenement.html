@@ -357,15 +357,16 @@
     <div class="montage">
       <div class="mont">
         <h3>Montage simple</h3>
-        <div class="p">150 $ <small>avant taxes</small></div>
+        <div class="p"><span data-montage-simple></span> <small>avant taxes</small></div>
         <p>Votre logo, 3 à 5 photos, du texte et des transitions. Propre, clair, efficace.</p>
       </div>
       <div class="mont">
         <h3>Montage animé</h3>
-        <div class="p">350 $ <small>avant taxes</small></div>
+        <div class="p"><span data-montage-animated></span> <small>avant taxes</small></div>
         <p>Logo animé, produits en mouvement et vidéos. Pour faire arrêter le monde dans l'allée.</p>
       </div>
     </div>
+    <p class="montage-booking-note" id="montageBookingNote"></p>
     <div class="free">Vous avez déjà vos fichiers? <b>Envoyez-les gratuitement</b> en JPEG, PNG ou MP4 (516 x 1032 px).</div>
   </div>
 </section>
@@ -403,7 +404,7 @@
   <div class="wrap narrow">
     <div class="head center"><div class="eyebrow" style="color:#1D4FC4">Questions fréquentes</div><h2>Tout ce que vous voulez savoir avant de réserver</h2></div>
     <details><summary>Qu'est-ce qui est inclus dans le prix?</summary><p>Tout : la livraison et l'installation le <span data-installation-date></span>, la réception et le test de vos visuels sur l'écran, la clé USB préchargée, la ligne d'assistance pendant le salon et la désinstallation. Seules les taxes (TPS et TVQ) s'ajoutent.</p></details>
-    <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Pas du tout. Après votre paiement, choisissez un montage simple (150 $) ou animé (350 $). Notre infographiste crée le contenu à partir de votre logo et de vos photos.</p></details>
+    <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Pas du tout. Choisissez un montage facultatif dans le récapitulatif avant Stripe. Votre location et votre montage sont réglés en un seul paiement. Notre infographiste crée ensuite le contenu à partir de votre logo et de vos photos.</p></details>
     <details><summary>Combien d'écrans pour un kiosque 10 x 10?</summary><p>Trois écrans côte à côte couvrent 288 cm, soit presque toute la largeur d'un kiosque de 10 pieds. C'est le choix de beaucoup d'exposants. Si vous voulez plus de trois écrans, utilisez le compteur de la troisième fiche : le prix par écran reste le même.</p></details>
     <details><summary>Quel format de fichiers dois-je envoyer?</summary><p>JPEG, PNG ou MP4. Pour un écran : 516 x 1032 px. Pour deux écrans côte à côte : 1032 x 1032 px. Pour trois : 1548 x 1032 px. Nous validons chaque fichier sur l'écran avant le salon.</p></details>
     <details><summary>Jusqu'à quand puis-je envoyer mes visuels?</summary><p>Jusqu'au <span data-artwork-date-full></span>. Après votre paiement, nous vous écrivons pour récupérer vos visuels, puis nous vous envoyons des rappels.</p></details>
@@ -440,17 +441,6 @@
       <li><div class="dot">3</div><div><b>Nous validons votre numéro de kiosque</b><span>Auprès de <span data-event-name></span>. Si quelque chose cloche, nous vous écrivons.</span></div></li>
       <li><div class="dot">4</div><div><b>Installation le <span data-installation-date></span></b><span>Livraison, installation et test. Salon <span data-event-period></span>. Désinstallation à la fermeture.</span></div></li>
     </ol>
-  </div>
-  <div class="card" style="margin-top:20px">
-    <h2>Pas de visuels prêts?</h2>
-    <p style="color:var(--muted);margin-bottom:14px">Notre infographiste s'en occupe. Choisissez le montage, puis envoyez-nous votre logo et vos photos.</p>
-    <div class="mgrid">
-      <div class="mbox"><b>Montage simple</b><span>Logo, 3 à 5 photos, texte, transitions. Environ 3 h de montage, modifications incluses. 59,99 $/h après.</span>
-        <a class="btn dark" data-mlink="simple1" href="#">1 écran : 150 $</a><a class="btn outline" data-mlink="simple2" href="#">2 écrans ou plus : 250 $</a></div>
-      <div class="mbox"><b>Montage animé</b><span>Logo animé, produits en mouvement, vidéos. Environ 5 h de montage, révisions incluses. 59,99 $/h après.</span>
-        <a class="btn dark" data-mlink="anime1" href="#">1 écran : 350 $</a><a class="btn outline" data-mlink="anime2" href="#">2 écrans ou plus : 450 $</a></div>
-    </div>
-    <div class="hint" style="margin-top:12px">Prix avant taxes. Vous avez déjà vos fichiers? Ne payez rien de plus, répondez simplement à notre courriel.</div>
   </div>
   <p style="margin-top:22px;font-size:14px;color:var(--muted)">Une question? <a href="mailto:info@pixanova.ca">info@pixanova.ca</a> · <span data-contact-phone></span> · <a href="#/">Retour à l'accueil</a></p>
 </div>

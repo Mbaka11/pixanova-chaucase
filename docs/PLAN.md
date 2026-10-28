@@ -23,7 +23,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Afficher « Stock à confirmer » si le serveur n’est pas joignable, sans annoncer de fausse disponibilité.
 - [ ] **Ajouter une réservation atomique dans un stockage partagé** : aucun contrôle par lectures Stripe seules ne garantit l’absence de survente.
 - [ ] Gérer création Stripe échouée, expiration, paiement, remboursement et reprise de webhook avec états idempotents.
-- [ ] Protection contre les doubles clics et abus de réservation temporaire.
+- [ ] Protection durable contre reprises réseau, multi-onglets et abus de réservation temporaire (garde contre les doubles clics déjà en place côté navigateur).
 
 **Blocage de sécurité :** le serveur refuse actuellement les clés Stripe réelles. Ne pas retirer ce blocage tant que le stock transactionnel n’est pas testé avec plusieurs acheteurs simultanés.
 
@@ -37,7 +37,11 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Configurer et vérifier le webhook signé localement avec Stripe CLI.
 - [ ] Configurer le webhook du domaine public sur Netlify.
 - [x] Page « Merci » : vérifier côté serveur événement et paiement, masquer les détails pour les états impayé/expiré/remboursé ou une session invalide.
-- [x] Afficher un récapitulatif vérifié (écrans, montant, taxes).
+- [x] Afficher un récapitulatif vérifié (écrans, montage acheté, montant, taxes).
+- [x] Modale FR/EN avant Stripe : sans montage par défaut, simple/animé facultatifs, taxes comprises et navigation clavier/mobile.
+- [x] Paiement unique avec lignes écrans et montage; prix serveur, choix strict et métadonnées figées; aucun achat de montage après paiement.
+- [x] Refuser un total périmé ou un montant Stripe différent du total accepté; taxes vérifiées et arrondies par ligne.
+- [x] Neuf combinaisons Stripe test et paiement combiné réussi puis remboursé; réservations préexistantes préservées.
 - [ ] Ajouter une référence de réservation client durable.
 - [ ] Courriels client/équipe fiables et déduplication persistante des événements Stripe.
 - [x] Tests locaux Stripe : carte acceptée/refusée, retour anglais/français, expiration, remboursement, compteur 4 écrans et disponibilité selon chevauchements; stock final restauré.
@@ -58,7 +62,6 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 ## Plus tard
 
 - Sous-titrage ou versions anglaises des vidéos, si souhaité (audio original conservé).
-- Montage graphique au paiement (fonctionnalité en attente).
 - Administration des événements si les fichiers deviennent insuffisants.
 - Rappels de remise des visuels et export comptable.
 

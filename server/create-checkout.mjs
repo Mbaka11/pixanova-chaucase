@@ -1,6 +1,8 @@
 import { getEvent, catalog, INVENTORY_POOL, HOLD_MINUTES, TOTAL_SCREENS } from './lib/config.mjs';
 import { getStripe, json, siteUrl } from './lib/http.mjs';
-import { computePrice, isValidScreens, bookingIsOpen } from './lib/pricing.mjs';
+import { isValidScreens, bookingIsOpen } from './lib/pricing.mjs';
+import { computeOrder, isValidMontage } from '../shared/order.mjs';
+import { getTaxRateIds } from './lib/taxes.mjs';
 import { countTakenScreens } from './lib/stock.mjs';
 import { eventLabels } from '../shared/events.mjs';
 import { copy } from '../shared/i18n.mjs';
@@ -17,28 +19,32 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
   const ui = copy(language);
   const screens = body?.screens;
   if (!isValidScreens(event, screens)) return json({ error: 'invalid_screens', max: event.maxScreensPerOrder }, 400);
+  const montage = body?.montage === undefined ? 'none' : body.montage;
+  if (!isValidMontage(montage)) return json({ error: 'invalid_montage' }, 400);
+  if (body.expectedTotalCents !== undefined && (!Number.isSafeInteger(body.expectedTotalCents) || body.expectedTotalCents < 0)) return json({ error: 'invalid_total' }, 400);
 
   // Les lectures Stripe ne constituent PAS un verrou de stock. Blocage des clés réelles
   // jusqu’à l’ajout d’un inventaire transactionnel partagé (aucun bouton de contournement).
   if (process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_') || process.env.STRIPE_SECRET_KEY?.startsWith('rk_live_')) {
     return json({ error: 'production_inventory_not_ready' }, 503);
   }
-  const taxRates = [process.env.STRIPE_TAX_RATE_TPS, process.env.STRIPE_TAX_RATE_TVQ];
-  if (!taxRates.every((id) => typeof id === 'string' && id.startsWith('txr_')) || taxRates[0] === taxRates[1]) return json({ error: 'tax_rates_not_configured' }, 503);
 
   let session;
   let stripe;
   try {
     stripe = stripeFactory();
+    const taxRates = await getTaxRateIds(stripe);
     const takenBefore = await countTakenScreens(stripe, event, now());
     if (takenBefore + screens > TOTAL_SCREENS) return json({ error: 'not_enough_stock', remaining: Math.max(0, TOTAL_SCREENS - takenBefore) }, 409);
-    const price = computePrice(event, screens, now());
+    const price = computeOrder(event, catalog.platform, screens, montage, now());
+    if (body.expectedTotalCents !== undefined && body.expectedTotalCents !== price.totalCents) return json({ error: 'quote_changed', ...price }, 409);
     const displayEvent = { ...event, name: event.translations?.[language]?.name || event.name };
     const labels = eventLabels(displayEvent, catalog.platform, language);
     const page = `${siteUrl(req)}/evenement.html?event=${encodeURIComponent(event.id)}`;
     const metadata = {
       inventory_pool: INVENTORY_POOL, event: event.id, event_name: labels.fullName,
       screens: String(screens), phase: price.phase, language,
+      montage, montage_cents: String(price.montageCents), rental_cents: String(price.rentalCents),
       rental_start: event.dates.rentalStartsAt, rental_end: event.dates.rentalEndsAt,
     };
     session = await stripe.checkout.sessions.create({
@@ -48,13 +54,21 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
         tax_rates: taxRates,
         price_data: {
           currency: catalog.platform.currency,
-          unit_amount: screens >= 3 ? price.unitCents : price.totalCents,
+          unit_amount: screens >= 3 ? price.rentalUnitCents : price.rentalCents,
           product_data: {
             name: ui.orderTitle(labels.fullName, screens),
             description: ui.orderDescription(labels.period, price.phase === 'early'),
           },
         },
-      }],
+      }, ...(price.montageCents ? [{
+        quantity: 1,
+        tax_rates: taxRates,
+        price_data: {
+          currency: catalog.platform.currency,
+          unit_amount: price.montageCents,
+          product_data: { name: ui.montageLabel(montage), description: ui.montageDescription(montage) },
+        },
+      }] : [])],
       billing_address_collection: 'required',
       phone_number_collection: { enabled: true },
       custom_fields: [
@@ -67,6 +81,9 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
       cancel_url: `${page}&lang=${language}#offres`,
     });
 
+    // Ne jamais rediriger vers un montant Stripe différent du récapitulatif accepté.
+    if (session.amount_total !== price.totalCents) throw new Error('checkout_total_mismatch');
+
     // Contrôle supplémentaire utile en test, mais PAS une garantie anti-survente.
     const takenAfter = await countTakenScreens(stripe, event, now());
     if (takenAfter > TOTAL_SCREENS) {
@@ -74,13 +91,13 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
       session = null;
       return json({ error: 'not_enough_stock', remaining: 0 }, 409);
     }
-    return json({ url: session.url, sessionId: session.id, eventId: event.id, phase: price.phase, totalCents: price.totalCents });
+    return json({ url: session.url, sessionId: session.id, ...price });
   } catch (err) {
     if (session) {
       try { await stripe.checkout.sessions.expire(session.id); } catch { console.error('Nettoyage session de test échoué'); }
     }
     console.error('create-checkout', err.message);
-    return json({ error: 'checkout_failed' }, 503);
+    return json({ error: err.message === 'tax_rates_not_configured' ? err.message : 'checkout_failed' }, 503);
   }
 };
 export default makeHandler();

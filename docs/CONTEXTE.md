@@ -13,7 +13,8 @@ Une plateforme réutilisable pour les salons : l’exposant choisit son événem
 - Noms, logos, dates et tarifs alimentés depuis la configuration; conserver les animations, les trois fiches et le compteur 3+.
 - Français par défaut; anglais disponible via FR / EN et `?lang=en`. Interface, dates, prix, FAQ, consentement, animation SVG et libellés Checkout traduits. Les vidéos gardent leur audio d’origine, avec une mention sur la page anglaise.
 - Paiement : session Stripe Checkout calculée côté serveur, pas de douze liens.
-- Montage graphique : achat reporté. La présentation actuelle reste en place; pas de nouvelles options de montage à développer à ce stade.
+- Montage graphique facultatif **avant Stripe**, dans une modale récapitulative FR/EN. Sans montage par défaut; écrans et montage payés ensemble, aucune vente additionnelle après paiement.
+- Montage simple : 150 $ pour 1 écran / 250 $ dès 2; animé : 350 $ / 450 $, avant taxes. Tarifs communs configurés dans `config/platform.json`.
 
 ## Inventaire commun selon les dates
 
@@ -56,6 +57,8 @@ Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975
 - Webhook local configuré avec Stripe CLI; secret dans `.env`, jamais affiché ni versionné. Paiement test reçu et signature vérifiée (HTTP 200); absence de signature refusée (HTTP 400).
 - Boutons de paiement branchés sans changer les trois fiches. Page « Merci » vérifiée côté serveur avec `/api/reservation`; `merci=1` seul ne confirme rien.
 - Paiement test FR de 688,70 $ réussi puis intégralement remboursé; refus de carte EN et expiration testés, stock final 20 / 20. Aucun achat réel.
+- Montage avant paiement vérifié : 9 combinaisons réelles de sessions Stripe test (1/2/3 écrans × sans/simple/animé), montants et arrondis identiques au récapitulatif. Paiement combiné EN de 1 546,42 $ réussi puis intégralement remboursé; réservations préexistantes conservées.
+- Le récapitulatif consulte `/api/quote` sans bloquer d’écrans. Le Checkout recalcule les prix, refuse un total accepté devenu périmé et vérifie le montant effectivement créé dans Stripe.
 - Notifications Resend désactivées durant les essais, déduplication durable encore à faire. Voir [STRIPE-LOCAL.md](STRIPE-LOCAL.md) pour les résultats et les limites.
 
 ## À confirmer avant production

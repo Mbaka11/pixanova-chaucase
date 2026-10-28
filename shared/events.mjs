@@ -15,6 +15,8 @@ export function validateCatalog(input) {
   assert(Number.isInteger(platform.inventory?.holdMinutes) && platform.inventory.holdMinutes >= 30 && platform.inventory.holdMinutes <= 1440, 'Blocage Stripe : 30 à 1440 minutes');
   assert(publicAsset(platform.brand?.logo), 'Logo Pixanova invalide');
   for (const key of ['valueCents', 'widthCm', 'widthPx', 'heightPx']) assert(cents(platform.screen?.[key]), `Écran : ${key} invalide`);
+  for (const key of ['simpleCents', 'animatedCents', 'multipleScreensExtraCents']) assert(cents(platform.montage?.[key]), `Montage : ${key} invalide`);
+  for (const key of ['gstPercent', 'qstPercent']) assert(typeof platform.taxes?.[key] === 'number' && platform.taxes[key] > 0 && platform.taxes[key] < 100 && Number.isInteger(platform.taxes[key] * 1000), `Taxe ${key} invalide`);
   assert(Array.isArray(events), 'Liste des événements requise');
   const ids = new Set();
   for (const event of events) {

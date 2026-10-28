@@ -36,12 +36,14 @@ Pour arrêter : Ctrl+C dans chaque terminal.
 
 ## Parcours
 
-1. Le bouton envoie uniquement événement, quantité et langue à `/api/checkout`.
-2. Le serveur calcule les prix, taxes et disponibilité, puis redirige vers le Checkout hébergé par Stripe.
-3. Les champs kiosque et entreprise sont obligatoires; adresse et téléphone sont collectés.
-4. Les écrans sont temporairement bloqués pendant la session (30 minutes).
-5. Au retour, `/api/reservation` vérifie la session Stripe. `merci=1` seul ne confirme plus un paiement.
-6. Le webhook vérifie la signature et traite la notification. Sans Resend, il journalise seulement un résumé non personnel : aucun courriel d’équipe n’est envoyé.
+1. Le bouton d’une offre ouvre le récapitulatif FR/EN. **Sans montage** est choisi par défaut.
+2. Choix facultatif : simple 150 $ / 250 $ dès 2 écrans; animé 350 $ / 450 $, avant taxes. Les trois fiches restent inchangées.
+3. `/api/quote` calcule écrans, montage, TPS, TVQ et total sans bloquer de stock. Les taux Stripe doivent être actifs, exclusifs et correspondre aux pourcentages configurés.
+4. « Continuer vers Stripe » transmet événement, quantité, montage, langue et ancien total attendu. `/api/checkout` recalcule tout : un écart exige une nouvelle confirmation, sans créer de session. Le montant Stripe créé est aussi contrôlé.
+5. **Un seul Checkout et un seul paiement**, avec une ligne écrans et éventuellement une ligne montage. Kiosque et entreprise obligatoires; adresse et téléphone collectés.
+6. Seuls les écrans sont temporairement bloqués pendant la session (30 minutes).
+7. Au retour, `/api/reservation` vérifie Stripe et affiche aussi le montage payé. `merci=1` seul ne confirme rien. Aucun achat supplémentaire sur cette page.
+8. Le webhook vérifie la signature et traite la notification. Sans Resend, il journalise seulement un résumé non personnel : aucun courriel d’équipe envoyé.
 
 La réponse de `/api/reservation` ne contient ni adresse, ni courriel, ni téléphone, ni détails de carte.
 
@@ -59,7 +61,7 @@ La réponse de `/api/reservation` ne contient ni adresse, ni courriel, ni télé
 | Retour depuis le Checkout anglais | Événement et langue conservés |
 | Expiration forcée de la session impayée | Quantité libérée; API et page indiquent l’expiration |
 | 4 écrans sélectionnés dans la troisième fiche EN | Quantité 4 reçue par Stripe; **2 437,47 $ CAD** avec taxes; stock 16 pendant le blocage, puis 20 après expiration sans paiement |
-| Trois clics rapides sur Réserver | Une seule requête navigateur pendant la préparation |
+| Trois clics rapides sur le paiement | Une seule requête Checkout pendant la préparation |
 | Stock insuffisant simulé | Message localisé et mise à jour du stock |
 | Retour `merci=1` sans session | « Paiement non vérifié », détails de réservation masqués |
 | Webhook signé / sans signature | HTTP 200 / HTTP 400 |
@@ -69,6 +71,30 @@ La réponse de `/api/reservation` ne contient ni adresse, ni courriel, ni télé
 Les expirations ont été forcées via l’API pour ne pas attendre 30 minutes. Le délai normal est configuré à 30 minutes. Aucun paiement réel n’a été effectué; les coordonnées d’essai sont fictives.
 
 `npm test` couvre également les règles métier et la vérification de confirmation.
+
+## Complément : montage avant Stripe
+
+Les neuf sessions suivantes ont réellement été créées dans Stripe **test**, comparées au récapitulatif et expirées sans paiement :
+
+| Écrans | Montage | Total CAD, taxes comprises |
+|---|---|---:|
+| 1 | Aucun | 688,70 $ |
+| 1 | Simple | 861,16 $ |
+| 1 | Animé | 1 091,11 $ |
+| 2 | Aucun | 1 258,98 $ |
+| 2 | Simple | 1 546,42 $ |
+| 2 | Animé | 1 776,37 $ |
+| 3 | Aucun | 1 828,10 $ |
+| 3 | Simple | 2 115,54 $ |
+| 3 | Animé | 2 345,49 $ |
+
+Arrondir chaque taxe **par ligne**, et non sur le sous-total global : 2 écrans + montage simple donnent TPS 67,25 $ et TVQ 134,17 $, soit 1 546,42 $ au total. Cette méthode a été comparée aux valeurs Stripe, pas seulement à un calcul simulé.
+
+Un paiement supplémentaire **de test** a été effectué dans le navigateur : **2 écrans + montage simple = 1 546,42 $**, retour anglais confirmé, montage payé affiché, aucun bouton d’achat supplémentaire. Ce paiement a été intégralement remboursé.
+
+Contrôles navigateur : ordinateur FR, mobile EN sans débordement, Échap et restitution du focus, impossibilité de focaliser l’arrière-plan, choix gratuit réinitialisé, total indisponible bloquant le paiement avec bouton de reprise, triple clic n’envoyant qu’un POST Checkout. Aucun écran n’est bloqué à la simple ouverture de la modale.
+
+Les réservations déjà présentes ont été conservées et la disponibilité comparée avant/après chaque série d’essais. Seuls les blocages et paiements créés par ces essais ont été nettoyés. Ne jamais ramener artificiellement le stock à 20 en expirant ou remboursant les commandes d’un autre essai/utilisateur.
 
 ## Limites avant production
 
