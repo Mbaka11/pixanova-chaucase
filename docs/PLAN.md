@@ -26,7 +26,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] UUID de demande, paramètres figés et clé Stripe d'idempotence pour les retries réseau et doubles clics.
 - [ ] Protection contre l'abus de réservations temporaires et dimensionnement de la réconciliation ; les multi-onglets peuvent encore générer des UUID distincts.
 
-**Blocage de sécurité :** les clés Stripe réelles restent refusées. La concurrence et la bascule TEST sont validées ; ne retirer la garde qu'après notifications, cas 3DS/asynchrones, contrôle des abus, séparation des environnements et validation métier finale. Détails : [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
+**Production active :** le réel exige désormais Supabase, un parc LIVE initialisé et une capacité vérifiée ; le backend Stripe historique reste interdit en réel. Checkout `livemode=true`, taxes, idempotence et webhook réel ont été vérifiés sans débit (stock 20 → 19 → 20). L'utilisateur a explicitement demandé l'ouverture sans Resend ; les courriels Stripe suffisent. Détails et limites : [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
 
 ## 3. Paiement et confirmation
 
@@ -44,7 +44,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Refuser un total périmé ou un montant Stripe différent du total accepté; taxes vérifiées et arrondies par ligne.
 - [x] Neuf combinaisons Stripe test et paiement combiné réussi puis remboursé; réservations préexistantes préservées.
 - [ ] Ajouter une référence de réservation client durable.
-- [ ] Courriels client/équipe fiables et déduplication persistante des événements Stripe.
+- [x] Reçus d'événements et transitions persistants ; courriels Stripe retenus par l'utilisateur. Resend reste une option, pas un prérequis.
 - [x] Tests locaux Stripe : carte acceptée/refusée, retour anglais/français, expiration, remboursement, compteur 4 écrans et disponibilité selon chevauchements; stock final restauré.
 - [x] Stock atomique concurrent, reprise après crash Stripe/DB, expiration publique et remboursements complets/partiels.
 - [ ] Tests supplémentaires : 3-D Secure et cycle asynchrone complet en navigateur.
@@ -81,7 +81,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Dépôt et CLI reliés à Netlify ; variables Supabase et webhook TEST configurés, historique de 58 sessions préservé (stock 6 pris / 14 libres).
 - [x] Domaine personnalisé events.pixanova.ca et certificat HTTPS vérifiés ; SITE_URL public mis à jour.
 - [ ] Vérifier les liens envoyés par les organisateurs.
-- [ ] Validation en test, puis passage réel après levée des blocages.
+- [x] Passage réel effectué sur demande explicite : clés réelles dans Netlify Production, parc LIVE et webhook réel raccordés ; notre Checkout réel non payé a été expiré et le stock restauré.
 
 ## Plus tard
 

@@ -29,7 +29,7 @@ Le parc physique comprend **20 écrans**, pas 20 par salon.
 - Les dates sont figées dans les métadonnées de chaque nouvelle session Stripe. Modifier ensuite le fichier du salon ne doit pas déplacer silencieusement une réservation déjà existante.
 - L’inventaire est configuré dans `config/platform.json`, les périodes et tarifs dans `config/events/*.json`.
 
-**Limite majeure :** les lectures Stripe actuelles permettent le calcul de disponibilité mais ne garantissent pas l’atomicité lors de deux réservations simultanées. Un stockage transactionnel commun reste requis. Les clés réelles sont explicitement refusées par `create-checkout` en attendant cette étape.
+**Production active :** le stock est maintenant réservé atomiquement dans Supabase, séparé entre TEST et LIVE. Les clés réelles sont autorisées uniquement avec le parc LIVE prêt et de capacité vérifiée ; aucun fallback vers les lectures Stripe historiques. Checkout réel et webhook réel vérifiés sans débit, stock 20 → 19 → 20. Voir [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
 
 ## Premier événement : ChauCase 2027
 
@@ -62,14 +62,14 @@ Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975
 - Montage avant paiement vérifié : 9 combinaisons réelles de sessions Stripe test (1/2/3 écrans × sans/simple/animé), montants et arrondis identiques au récapitulatif. Après mise à jour des forfaits, paiement combiné EN de **1 488,93 $** (2 écrans + création à 200 $) réussi puis intégralement remboursé; réservations préexistantes conservées. Les anciennes commandes restent affichées à leur prix payé, jamais recalculées au nouveau tarif.
 - La confirmation utilise la ventilation fiscale Stripe pour les lignes TPS/TVQ; à défaut, elle conserve la taxe globale au lieu d’inventer une ventilation. Aucun nom, courriel ni téléphone n’est exposé par l’API de confirmation.
 - Le récapitulatif consulte `/api/quote` sans bloquer d’écrans. Le Checkout recalcule les prix, refuse un total accepté devenu périmé et vérifie le montant effectivement créé dans Stripe.
-- Notifications Resend désactivées durant les essais, déduplication durable encore à faire. Voir [STRIPE-LOCAL.md](STRIPE-LOCAL.md) pour les résultats et les limites.
+- Reçus d'événements et transitions durables livrés dans Supabase. Resend n'est pas requis : l'utilisateur conserve les courriels Stripe. Voir [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md) pour l'état réel, [STRIPE-LOCAL.md](STRIPE-LOCAL.md) pour les essais historiques.
 
-## À confirmer avant production
+## Suivi métier restant (production technique ouverte)
 
 1. Périodes réelles de transport/retour et fermeture des ventes par événement.
-2. Stock transactionnel et stratégie de reprise après échec Stripe.
+2. Stock transactionnel et reprise après échec Stripe livrés ; surveiller la réconciliation et les abus de holds.
 3. Moyens de paiement activés dans Stripe et traitement des paiements différés/échoués.
 4. Valeur commerciale de 7 000 $ par écran et besoins électriques : les valeurs de 4+ écrans restent des extrapolations non validées.
-5. Conditions, confidentialité, reçus et notifications automatiques.
+5. Conditions et confidentialité à relire ; les courriels Stripe sont retenus, sans projet Resend obligatoire.
 
 Les anciens documents sont conservés pour historique. Le plan actuel est [PLAN.md](PLAN.md); la procédure d’ajout d’un salon est [EVENEMENTS.md](EVENEMENTS.md).

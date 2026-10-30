@@ -1,10 +1,10 @@
 # Mise en production de Stripe — suivi
 
-Statut : **stock Supabase livré et activé en TEST sur events.pixanova.ca ; ventes réelles toujours bloquées par le code** (`create-checkout` refuse `sk_live_` / `rk_live_`) jusqu'à la validation finale. Voir [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
+Statut : **PRODUCTION ACTIVE sur https://events.pixanova.ca.** Stripe réel, taxes réelles, parc transactionnel LIVE et webhook réel raccordés. Checkout réel vérifié sans paiement, puis notre session expirée et stock restauré à 20. Voir [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
 
 ## Variables Netlify (contexte Production)
 
-Modèle : `.env.production.example`. Remplacer les valeurs `REMPLACER…` directement dans Netlify (*Project configuration → Environment variables*, portée **Production** seulement). Le site de test garde ses clés de test.
+Modèle : `.env.production.example`. Remplacer les valeurs `REMPLACER…` directement dans Netlify (*Project configuration → Environment variables*, portée **Production** seulement). Le développement local et les autres contextes de prévisualisation gardent leurs clés de test ; le contexte Netlify Production sert désormais les vraies ventes.
 
 | Variable | Valeur |
 |---|---|
@@ -17,7 +17,7 @@ Modèle : `.env.production.example`. Remplacer les valeurs `REMPLACER…` direct
 
 Le serveur refuse de créer un paiement si les taux ne sont pas actifs, exclusifs et à 5 % / 9,975 %. Les deux identifiants RÉELS ont été contrôlés par API en lecture seule le 30 octobre 2026 : actifs, exclusifs, `livemode=true`, pourcentages corrects. Aucun débit réel effectué.
 
-Attention : le projet Netlify `pixanova-events-test` sert actuellement ce domaine avec les **clés de test**, même dans son contexte de déploiement « Production ». Ne pas y remplacer les clés par le réel sans la bascule dédiée.
+Attention : le nom interne du projet Netlify reste `pixanova-events-test`, mais **son contexte Production utilise désormais les clés réelles** et le domaine events.pixanova.ca. Ne pas remettre les clés de test sur ce contexte. Le `.env` local garde une clé de test active ; le bloc réel commenté est réservé aux commandes opérateur `--live`.
 
 ## Avancement du compte réel
 
@@ -31,9 +31,9 @@ Attention : le projet Netlify `pixanova-events-test` sert actuellement ce domain
 - [x] Numéros d'inscription TPS/TVQ présents selon confirmation utilisateur
 - [ ] Conditions de vente (URL)
 - [ ] Authentification à deux facteurs
-- [x] Destination webhook réelle créée selon confirmation utilisateur ; secret conservé dans le bloc réel du `.env`, pas encore raccordé au serveur
-- [ ] Ajouter au webhook réel les 3 événements de cycle de vie supplémentaires avant sa bascule (voir SUPABASE-EVENTS.md)
-- [x] Stock transactionnel et idempotence validés sur Supabase et Stripe TEST ; historique préservé
-- [x] Webhook public TEST signé, expirations et libération du stock vérifiés
-- [ ] Courriels d'équipe Resend : domaine, clé API et livraison à valider
-- [ ] Validation finale du réel et éventuel petit paiement autorisé, puis remboursement de ce paiement uniquement
+- [x] Destination webhook réelle raccordée au serveur public avec les 5 événements requis ; signature et livraison d'une expiration réelle vérifiées
+- [x] Stock transactionnel et idempotence validés ; parcs TEST et LIVE séparés ; historique de test préservé
+- [x] Webhook public TEST signé, expirations et libération du stock vérifiés durant la préproduction
+- [x] Courriels Stripe retenus par l'utilisateur ; **Resend facultatif et non requis**
+- [x] Checkout réel à 688,70 CAD vérifié, retry idempotent, session expirée, stock 20 → 19 → 20
+- Aucun paiement réel soumis ni débité. La livraison effective d'un reçu réel n'a donc pas été testée ; aucun débit de contrôle n'est lancé sans autorisation.
