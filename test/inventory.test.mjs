@@ -120,7 +120,7 @@ test('checkout durable : retry retrouve le prix et la session originaux sans nou
   const r=await checkoutHandler(()=>({}),now,()=>inventory)(post(b));assert.equal(r.status,200);assert.equal((await r.json()).sessionId,f.session.id);
   assert.equal((await checkoutHandler(()=>({}),now,()=>inventory)(post({...b,screens:2}))).status,409);
 }));
-test('checkout durable : garde réelle maintenue même si Supabase est sélectionné', async () => usingDb(async()=>{
+test('checkout durable : réel refusé sans base LIVE prête même si Supabase est sélectionné', async () => usingDb(async()=>{
   process.env.STRIPE_SECRET_KEY='sk_live_placeholder';
   try{assert.equal((await checkoutHandler(()=>{throw Error('not called');},now)(post(body()))).status,503);}
   finally{process.env.STRIPE_SECRET_KEY='sk_test_placeholder';}
@@ -147,9 +147,10 @@ test('webhook durable : ligne introuvable => 500 pour réessai Stripe', async ()
   const inventory={db:{bySession:async()=>null},find:async()=>null};
   assert.equal((await webhookHandler(()=>stripe,()=>inventory)(new Request('https://example.test',{method:'POST',body:'{}'}))).status,500);
 }));
-function durableFixture({ failFirstAttach = false } = {}) {
+function durableFixture({ failFirstAttach = false, environment = 'test', ready = true } = {}) {
   const rows = new Map(), sessions = new Map(); let attachCalls = 0;
   const db = {
+    pool: async () => ({ ready, capacity: 20 }),
     find: async (environment,id) => rows.get(id) || null,
     reserve: async p => {
       let row=rows.get(p.p_request_id);
@@ -167,13 +168,13 @@ function durableFixture({ failFirstAttach = false } = {}) {
   const stripe={taxRates:{retrieve:async id=>({active:true,inclusive:false,percentage:id==='txr_tps'?5:9.975})},checkout:{sessions:{
     create:async(params,options)=>{
       if(!sessions.has(options.idempotencyKey))sessions.set(options.idempotencyKey,{
-        id:'cs_test_durable',url:'https://checkout.stripe.com/test',livemode:false,currency:'cad',amount_total:68870,
+        id:`cs_${environment}_durable`,url:'https://checkout.stripe.com/test',livemode:environment==='live',currency:'cad',amount_total:68870,
         status:'open',payment_status:'unpaid',metadata:params.metadata,
       });
       return sessions.get(options.idempotencyKey);
     },retrieve:async()=>[...sessions.values()][0],
   }}};
-  return {rows,sessions,handler:checkoutHandler(()=>stripe,now,()=>createInventory({db,environment:'test'}))};
+  return {rows,sessions,handler:checkoutHandler(()=>stripe,now,()=>createInventory({db,environment}))};
 }
 test('checkout durable : deux submits concurrents partagent réservation et clé Stripe',async()=>usingDb(async()=>{
   const f=durableFixture(),b=body();
@@ -185,6 +186,22 @@ test('checkout durable : crash après Stripe.create puis retry => une seule sess
   const f=durableFixture({failFirstAttach:true}),b=body();
   assert.equal((await f.handler(post(b))).status,503);assert.equal(f.rows.size,1);assert.equal(f.sessions.size,1);
   assert.equal((await f.handler(post(b))).status,200);assert.equal(f.sessions.size,1);
+}));
+test('checkout réel : parc LIVE prêt autorisé, sans chemin de stock Stripe historique',async()=>usingDb(async()=>{
+  process.env.STRIPE_SECRET_KEY='sk_live_placeholder';
+  try{
+    const f=durableFixture({environment:'live'});const r=await f.handler(post(body()));
+    assert.equal(r.status,200);assert.equal(f.sessions.size,1);
+    assert.equal([...f.sessions.values()][0].metadata.inventory_environment,'live');
+  }finally{process.env.STRIPE_SECRET_KEY='sk_test_placeholder';}
+}));
+test('checkout réel : parc non prêt ou environnement TEST => refus sans création Stripe',async()=>usingDb(async()=>{
+  process.env.STRIPE_SECRET_KEY='sk_live_placeholder';
+  try{
+    for(const options of [{environment:'live',ready:false},{environment:'test',ready:true}]){
+      const f=durableFixture(options);assert.equal((await f.handler(post(body()))).status,503);assert.equal(f.sessions.size,0);
+    }
+  }finally{process.env.STRIPE_SECRET_KEY='sk_test_placeholder';}
 }));
 test('outbox : une notification déjà envoyée ne repart pas', async()=>{
   const f=fixture();let calls=0;

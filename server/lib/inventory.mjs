@@ -9,11 +9,15 @@ export const requestFingerprint = body => fingerprint({ eventId: body.eventId, s
   montage: body.montage ?? 'none', language: body.language ?? 'fr', expectedTotalCents: body.expectedTotalCents ?? null });
 
 export function createInventory({ db = createInventoryDb(), environment = stripeEnvironment(), poolId = INVENTORY_POOL } = {}) {
+  async function assertReady() {
+    const pool = await db.pool(environment, poolId);
+    if (!pool.ready || pool.capacity !== TOTAL_SCREENS) throw new Error('inventory_not_initialized');
+    return pool;
+  }
   return {
-    db, environment, poolId,
+    db, environment, poolId, assertReady,
     async stock(event) {
-      const pool = await db.pool(environment, poolId);
-      if (!pool.ready || pool.capacity !== TOTAL_SCREENS) throw new Error('inventory_not_initialized');
+      const pool = await assertReady();
       const rows = await db.rows(environment, poolId);
       const taken = peakUsageForPeriod(event.dates, rows.map(r => ({ screens: r.screens, rentalStartsAt: r.rental_start, rentalEndsAt: r.rental_end })));
       return { eventId: event.id, total: pool.capacity, taken, remaining: Math.max(0, pool.capacity - taken),

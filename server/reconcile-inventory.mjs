@@ -9,13 +9,16 @@ import { notifyTeam } from './lib/notifications.mjs';
 export default async () => {
   if (!supabaseEnabled()) return;
   const environment = stripeEnvironment();
-  if (environment !== 'test') { console.error('inventory_live_not_enabled'); return; }
-  const db = createInventoryDb({ timeout: 3000 });
+  const db = createInventoryDb({ timeout: 2000 });
   const inventory = createInventory({ db, environment });
   const pool = await db.pool(environment, INVENTORY_POOL);
   if (!pool.ready) return;
-  const rows = await db.request(`events_reservations?environment=eq.${environment}&pool_id=eq.${INVENTORY_POOL}&state=neq.released&order=updated_at,id&limit=2`);
-  const stripe = getStripe({ timeout: 4000, maxNetworkRetries: 0 });
+  const [holds, paid] = await Promise.all([
+    db.request(`events_reservations?environment=eq.${environment}&pool_id=eq.${INVENTORY_POOL}&state=in.(allocating,held,pending,review)&order=updated_at,id&limit=10`),
+    db.request(`events_reservations?environment=eq.${environment}&pool_id=eq.${INVENTORY_POOL}&state=eq.paid&order=updated_at,id&limit=2`),
+  ]);
+  const rows = [...holds, ...paid];
+  const stripe = getStripe({ timeout: 3000, maxNetworkRetries: 0 });
   await Promise.all(rows.map(async row => {
     try {
       const current = await inventory.reconcile(stripe, row);

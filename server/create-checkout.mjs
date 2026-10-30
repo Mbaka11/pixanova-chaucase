@@ -34,17 +34,19 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now, inventory
   if (!isValidMontage(montage)) return json({ error: 'invalid_montage' }, 400);
   if (body.expectedTotalCents !== undefined && (!Number.isSafeInteger(body.expectedTotalCents) || body.expectedTotalCents < 0)) return json({ error: 'invalid_total' }, 400);
 
-  // Les lectures Stripe ne constituent PAS un verrou de stock. Blocage des clés réelles
-  // jusqu’à l’ajout d’un inventaire transactionnel partagé (aucun bouton de contournement).
-  if (process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_') || process.env.STRIPE_SECRET_KEY?.startsWith('rk_live_')) {
-    return json({ error: 'production_inventory_not_ready' }, 503);
-  }
+  const live = /^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '');
 
   let session;
   let stripe;
   try {
+    const durable = supabaseEnabled();
+    // Aucun chemin Stripe historique autorisé en réel : seul le parc Supabase
+    // LIVE initialisé, de capacité vérifiée, peut créer un paiement réel.
+    if (live && !durable) return json({ error: 'production_inventory_not_ready' }, 503);
+    const inventory = durable ? inventoryFactory() : null;
+    if (live && (inventory?.environment !== 'live' || typeof inventory.assertReady !== 'function')) return json({ error: 'production_inventory_not_ready' }, 503);
+    if (inventory?.assertReady) await inventory.assertReady();
     stripe = stripeFactory();
-    const inventory = supabaseEnabled() ? inventoryFactory() : null;
     if (inventory && !validRequestId(body.requestId)) return json({ error: 'invalid_request_id' }, 400);
     if (inventory) body.requestId = body.requestId.toLowerCase();
     if (inventory) {
@@ -151,7 +153,7 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now, inventory
       try { await stripe.checkout.sessions.expire(session.id); } catch { console.error('Nettoyage session de test échoué'); }
     }
     console.error('create-checkout', err.message);
-    return json({ error: err.message === 'tax_rates_not_configured' ? err.message : 'checkout_failed' }, 503);
+    return json({ error: ['tax_rates_not_configured','inventory_not_initialized'].includes(err.message) ? err.message : 'checkout_failed' }, 503);
   }
 };
 export default makeHandler();
