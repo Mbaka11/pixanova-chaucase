@@ -12,7 +12,7 @@
 - Déploiement d'ouverture : `6ae50cd314f2ebb1aaf5b9c0`, code `bc1b166`. `CHECKOUT_PAUSED=false`.
 - La garde réelle reste stricte : Supabase obligatoire, environnement `live`, parc prêt et capacité vérifiée. Un backend Stripe historique ou une base non prête est refusé.
 - 79 tests automatisés passent. La réconciliation traite désormais 10 allocations/holds et 2 paiements par lot, toutes les 5 minutes, en TEST comme en LIVE.
-- `SITE_URL` et les identifiants de taux sont des informations publiques, plus marqués comme secrets Netlify ; les clés API, secrets webhook et clé Supabase restent masqués.
+- `SITE_URL` et les identifiants de taux sont des informations publiques, plus marqués comme secrets Netlify ; ils sont les seuls noms exclus du scan de valeurs (`SECRETS_SCAN_OMIT_KEYS` dans netlify.toml). Le scan reste actif pour toutes les vraies clés API et signatures ; aucune exclusion de fichier ni désactivation globale. Les clés API, secrets webhook et clé Supabase restent masqués.
 
 ## Historique de validation TEST (avant la bascule réelle)
 

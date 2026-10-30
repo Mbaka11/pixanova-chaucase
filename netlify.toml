@@ -6,6 +6,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # URL du site et identifiants de taux publics : pas des secrets.
+  # Garder le scan actif pour les clés Stripe, secrets webhook et Supabase.
+  SECRETS_SCAN_OMIT_KEYS = "SITE_URL,STRIPE_TAX_RATE_TPS,STRIPE_TAX_RATE_TVQ"
 
 [dev]
   command = "npm run dev"
