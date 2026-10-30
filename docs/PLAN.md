@@ -21,11 +21,12 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Même stock partagé entre salons qui se chevauchent; réutilisation possible à des dates différentes.
 - [x] Périodes figées dans les nouvelles sessions Stripe; compatibilité des anciennes sessions ChauCase.
 - [x] Afficher « Stock à confirmer » si le serveur n’est pas joignable, sans annoncer de fausse disponibilité.
-- [ ] **Ajouter une réservation atomique dans un stockage partagé** : aucun contrôle par lectures Stripe seules ne garantit l’absence de survente.
-- [ ] Gérer création Stripe échouée, expiration, paiement, remboursement et reprise de webhook avec états idempotents.
-- [ ] Protection durable contre reprises réseau, multi-onglets et abus de réservation temporaire (garde contre les doubles clics déjà en place côté navigateur).
+- [x] Réservation atomique Supabase, séparation test/réel et pic calendaire : 32 requêtes simultanées, exactement 20 acceptées et 12 refusées.
+- [x] Création Stripe ambiguë, expiration, paiement, remboursements complets/partiels et événements dupliqués/désordonnés : intégration TEST validée.
+- [x] UUID de demande, paramètres figés et clé Stripe d'idempotence pour les retries réseau et doubles clics.
+- [ ] Protection contre l'abus de réservations temporaires et dimensionnement de la réconciliation ; les multi-onglets peuvent encore générer des UUID distincts.
 
-**Blocage de sécurité :** le serveur refuse actuellement les clés Stripe réelles. Ne pas retirer ce blocage tant que le stock transactionnel n’est pas testé avec plusieurs acheteurs simultanés.
+**Blocage de sécurité :** les clés Stripe réelles restent refusées. La concurrence et la bascule TEST sont validées ; ne retirer la garde qu'après notifications, cas 3DS/asynchrones, contrôle des abus, séparation des environnements et validation métier finale. Détails : [SUPABASE-EVENTS.md](SUPABASE-EVENTS.md).
 
 ## 3. Paiement et confirmation
 
@@ -35,7 +36,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Gestion des moyens de paiement compatible avec l’API Stripe actuelle (configuration Dashboard).
 - [x] Brancher les boutons existants à `/api/checkout` sans remplacer les fiches; attente et erreurs bilingues.
 - [x] Configurer et vérifier le webhook signé localement avec Stripe CLI.
-- [ ] Configurer le webhook du domaine public sur Netlify.
+- [x] Webhook public TEST sur events.pixanova.ca : 5 événements, signature et livraison Stripe réelles validées, expirations libérant le stock.
 - [x] Page « Merci » : vérifier côté serveur événement et paiement, masquer les détails pour les états impayé/expiré/remboursé ou une session invalide.
 - [x] Afficher un récapitulatif vérifié (écrans, montage acheté, montant, taxes).
 - [x] Modale FR/EN avant Stripe : sans montage par défaut, simple/animé facultatifs, taxes comprises et navigation clavier/mobile.
@@ -45,7 +46,8 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [ ] Ajouter une référence de réservation client durable.
 - [ ] Courriels client/équipe fiables et déduplication persistante des événements Stripe.
 - [x] Tests locaux Stripe : carte acceptée/refusée, retour anglais/français, expiration, remboursement, compteur 4 écrans et disponibilité selon chevauchements; stock final restauré.
-- [ ] Tests supplémentaires : 3-D Secure, stock atomique concurrent, reprises réseau et paiements différés.
+- [x] Stock atomique concurrent, reprise après crash Stripe/DB, expiration publique et remboursements complets/partiels.
+- [ ] Tests supplémentaires : 3-D Secure et cycle asynchrone complet en navigateur.
 - Résultats et commandes : [STRIPE-LOCAL.md](STRIPE-LOCAL.md).
 
 ## Retours de la démonstration
@@ -58,7 +60,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Confirmation centrée, reçu structuré avec TPS/TVQ réellement payées, trois étapes et aucun faux check pour un impayé.
 - [x] Hiérarchie de prix allégée dans la modale et le reçu : total dominant, détails et taxes en petit, livraison/installation réunies en une mention discrète.
 - [x] Anciennes factures conservées à leur prix payé; tests FR/EN sur ordinateur et mobile.
-- [ ] Régler le fuseau d’affichage du Dashboard Stripe dans les paramètres du compte (action propriétaire, pas une modification des timestamps API).
+- [x] Fuseau d'affichage du Dashboard Stripe réglé selon confirmation utilisateur ; timestamps API inchangés.
 
 ## Refonte de la page de vente (revue GPT-6.1 Sol / Opus 5.5)
 
@@ -76,8 +78,9 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [ ] Valider la valeur commerciale de 7 000 $ et l’alimentation à 4+ écrans (extrapolée, non confirmée).
 - [ ] Conditions de location, remboursement, confidentialité et taxes.
 - [ ] Favicon, image de partage et statistiques sous consentement.
-- [ ] Relier le dépôt renommé à Netlify, renseigner les secrets et vérifier le webhook.
-- [ ] Vérifier domaine personnalisé et liens envoyés par les organisateurs.
+- [x] Dépôt et CLI reliés à Netlify ; variables Supabase et webhook TEST configurés, historique de 58 sessions préservé (stock 6 pris / 14 libres).
+- [x] Domaine personnalisé events.pixanova.ca et certificat HTTPS vérifiés ; SITE_URL public mis à jour.
+- [ ] Vérifier les liens envoyés par les organisateurs.
 - [ ] Validation en test, puis passage réel après levée des blocages.
 
 ## Plus tard

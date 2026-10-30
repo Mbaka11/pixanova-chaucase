@@ -8,7 +8,13 @@
 - Migration `202610300002_inventory_lifecycle.sql` installée et validée sur Supabase : garde de bascule, transitions désordonnées, remboursement complet, libération atomique et outbox. Les droits et fonctions ont aussi été contrôlés sur PostgreSQL local/PGlite.
 - **77 tests automatisés passent**, dont les doubles submits et la reprise après un crash entre Stripe.create et l'attachement DB.
 - **Intégration Stripe TEST + Supabase validée** dans un parc QA isolé : crash après création récupéré sans seconde session, expiration/libération, paiement navigateur fictif de 1,15 CAD, webhooks signés dupliqués/désordonnés, remboursement partiel de 0,01 CAD conservant le stock, puis remboursement des 1,14 CAD restants libérant le stock. Parc QA nettoyé, seules nos sessions ont été expirées/remboursées. Ce contrôle exerce le handler signé localement, pas encore la livraison webhook publique de Stripe.
-- Adaptateur REST, Checkout durable, webhooks, outbox et tâche planifiée codés, mais **pas activés sur le site**.
+- **Bascule TEST effectuée sur https://events.pixanova.ca** : 58 sessions historiques importées sans création, expiration ni remboursement de ces sessions. Stock conservé : 6 écrans pris, 14 disponibles. Supabase actif aussi dans `.env` local ; aucun service Netlify Dev ne tournait sur 8888 au moment de la bascule.
+- Webhook public **de test** créé avec les 5 événements ; son secret est dans Netlify et dans une ligne commentée distincte de `.env`. Le secret Stripe CLI local et le webhook réel sont inchangés.
+- Livraison réelle Stripe → HTTPS Netlify validée par expiration d'une session QA : signature acceptée, reçu durable `processed`, libération automatique. Cette réservation QA expirée (fenêtre 2099) est conservée pour les retries et l'audit.
+- Navigateur public validé : FR desktop, EN mobile, prix 688,70 / 1 488,93 CAD, triple clic = une requête, retry = même session ; stock 14 → 13 → 14 après expiration de notre session seulement. Aucun paiement soumis pendant ce contrôle public.
+- Réconciliation opérateur : 4 réservations actives vérifiées, 0 à examiner ; stock inchangé. Planification Netlify confirmée : `reconcile-inventory`, `*/5 * * * *`.
+- Déploiement de bascule : `6ae507066dad9194674ea8ba`, code `48b264c`. Checkout de TEST rouvert. Le contexte Netlify « Production » de ce site utilise toujours Stripe TEST ; ce contexte ne signifie pas que les paiements réels sont activés.
+- Netlify gratuit ne permet pas la portée personnalisée « functions seulement ». Les nouvelles variables utilisent les portées standard (secret masqué pour la clé Supabase), comme les secrets Stripe existants. Aucune clé n'est incluse dans les fichiers publics.
 - Le blocage `production_inventory_not_ready` pour les clés réelles reste volontairement en place.
 
 ## Schéma installé
@@ -82,4 +88,4 @@ Si l'import échoue, le parc reste non prêt et les créations restent suspendue
 
 ## Validation avant déblocage réel
 
-Restent : la bascule et préservation de l'historique, la livraison des webhooks publics et des notifications, le parcours navigateur sur le site basculé et les cas d'échec / 3DS. Préparer une bascule réelle distincte ; les scripts de bootstrap et de réconciliation refusent actuellement le mode réel. Garder les clés et webhooks test/réel séparés. Ne lever la garde réelle qu'après ces validations et accord d'ouverture.
+Restent : livraison effective des notifications Resend, 3DS et cas asynchrones complets en navigateur, protections contre l'abus de holds / dimensionnement de la réconciliation, documents et autorisations métier, puis séparation et validation finale du réel. La bascule TEST, l'historique, les webhooks publics et le parcours navigateur sont validés. Préparer une bascule réelle distincte ; les scripts de bootstrap et de réconciliation refusent actuellement le mode réel. Garder les clés et webhooks test/réel séparés. Ne lever la garde réelle qu'après ces validations et accord d'ouverture.
