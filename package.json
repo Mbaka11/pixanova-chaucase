@@ -7,6 +7,9 @@
     "dev": "node scripts/dev.mjs",
     "dev:full": "netlify dev --offline --no-open",
     "stripe:listen": "node --env-file=.env scripts/stripe-listen.mjs",
+    "inventory:test": "node scripts/test-inventory-db.mjs",
+    "inventory:bootstrap": "node scripts/bootstrap-inventory.mjs",
+    "inventory:reconcile": "node scripts/reconcile-inventory.mjs",
     "test": "node --test test/*.test.mjs",
     "build": "node scripts/build-config.mjs",
     "pretest": "npm run build"

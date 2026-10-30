@@ -1,80 +1,66 @@
 import { getEvent, INVENTORY_POOL } from './lib/config.mjs';
 import { getStripe, json } from './lib/http.mjs';
-import { copy } from '../shared/i18n.mjs';
+import { notifyTeam } from './lib/notifications.mjs';
+import { createInventory } from './lib/inventory.mjs';
+import { supabaseEnabled, stripeEnvironment } from './lib/inventory-db.mjs';
 
-/** Avertit l'équipe par courriel (Resend) si configuré, sinon écrit dans les journaux. */
-async function notifyTeam(session) {
-  const label = session.metadata.event_name || getEvent(session.metadata.event)?.name || session.metadata.event;
-  const fields = Object.fromEntries(
-    (session.custom_fields || []).map((c) => [c.key, c.text?.value]),
-  );
-  const text = [
-    `Nouvelle réservation ${label}`,
-    `Écrans : ${session.metadata.screens}`,
-    `Montage : ${copy('fr').montageLabel(session.metadata.montage || 'none')}`,
-    `Total payé : ${(session.amount_total / 100).toFixed(2)} $ CAD (taxes incluses)`,
-    `Contact : ${session.collected_information?.individual_name || session.customer_details?.individual_name || session.customer_details?.name || '—'}`,
-    `Entreprise : ${fields.entreprise || '—'}`,
-    `Kiosque : ${fields.kiosque || '—'} (à vérifier)`,
-    `Courriel : ${session.customer_details?.email || '—'}`,
-    `Téléphone : ${session.customer_details?.phone || '—'}`,
-    `Session Stripe : ${session.id}`,
-  ].join('\n');
+export const inventoryEvents = new Set([
+  'checkout.session.completed', 'checkout.session.async_payment_succeeded',
+  'checkout.session.async_payment_failed', 'checkout.session.expired', 'charge.refunded',
+]);
 
-  const { RESEND_API_KEY, NOTIFY_TO, NOTIFY_FROM } = process.env;
-  if (!RESEND_API_KEY || !NOTIFY_TO || !NOTIFY_FROM) {
-    console.log('Réservation test reçue; notifications non configurées', { event: session.metadata.event, screens: session.metadata.screens });
-    return;
-  }
-
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-      'Idempotency-Key': `reservation-${session.id}`,
-    },
-    body: JSON.stringify({
-      from: NOTIFY_FROM,
-      to: NOTIFY_TO.split(','),
-      subject: `Réservation ${label} : ${session.metadata.screens} écran(s)`,
-      text,
-    }),
-  });
-  if (!res.ok) throw new Error(`Notification échouée : ${res.status}`);
-}
-
-export default async (req) => {
+export const makeHandler = (stripeFactory = getStripe, inventoryFactory = createInventory) => async (req) => {
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) return json({ error: 'webhook_not_configured' }, 500);
-
-  let event;
+  let event, stripe;
   try {
-    event = getStripe().webhooks.constructEvent(
-      await req.text(),
-      req.headers.get('stripe-signature'),
-      secret,
-    );
-  } catch (err) {
-    console.error('signature invalide', err.message);
+    stripe = stripeFactory();
+    event = stripe.webhooks.constructEvent(await req.text(), req.headers.get('stripe-signature'), secret);
+  } catch {
+    console.error('webhook_signature_invalid');
     return json({ error: 'invalid_signature' }, 400);
   }
-
-  if (
-    ['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type) &&
-    event.data.object.payment_status === 'paid' &&
-    (event.data.object.metadata?.inventory_pool === INVENTORY_POOL || getEvent(event.data.object.metadata?.event))
-  ) {
-    try {
-      await notifyTeam(event.data.object);
-    } catch (err) {
-      console.error('notification', err.message);
-      return json({ error: 'notification_failed' }, 500);
+  try {
+    if (supabaseEnabled() && inventoryEvents.has(event.type)) {
+      const environment = stripeEnvironment();
+      if (event.livemode !== (environment === 'live')) return json({ error: 'webhook_environment_mismatch' }, 400);
+      const inventory = inventoryFactory();
+      let session, row;
+      const object = event.data.object;
+      if (event.type === 'charge.refunded') {
+        const intentId = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
+        if (!intentId) return json({ received: true }); // Charge hors Checkout.
+        // Retrouver la session via Stripe, pas via des métadonnées de charge supposées.
+        const sessions = await stripe.checkout.sessions.list({ payment_intent: intentId, limit: 10 });
+        if (sessions.has_more) throw new Error('refund_session_ambiguous');
+        const candidates = sessions.data.filter(s => s.metadata?.inventory_pool === INVENTORY_POOL || getEvent(s.metadata?.event));
+        if (candidates.length > 1) throw new Error('refund_session_ambiguous');
+        if (!candidates.length) return json({ received: true });
+        session = candidates[0];
+      } else session = object;
+      if (session.metadata?.inventory_pool !== INVENTORY_POOL && !getEvent(session.metadata?.event)) return json({ received: true });
+      row = await inventory.db.bySession(environment, session.id);
+      if (!row && session.metadata?.inventory_request_id) row = await inventory.find(session.metadata.inventory_request_id);
+      // Un événement peut arriver avant que Checkout ait attaché l'ID Stripe.
+      // En cas de ligne manquante, Stripe doit réessayer, pas perdre l'événement.
+      if (!row) throw new Error('inventory_reservation_missing');
+      const current = await stripe.checkout.sessions.retrieve(session.id, { expand: ['payment_intent.latest_charge'] });
+      const result = await inventory.reconcile(stripe, row, { session: current, stripeEvent: event });
+      await inventory.notify(result.row, result.session, notifyTeam);
+      await inventory.db.request(`events_webhook_receipts?environment=eq.${environment}&stripe_event_id=eq.${encodeURIComponent(event.id)}`, {
+        method: 'PATCH', body: { state: 'processed', processed_at: new Date().toISOString() },
+      });
+    } else if (!supabaseEnabled() && ['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) {
+      const session = event.data.object;
+      if (session.payment_status === 'paid' && (session.metadata?.inventory_pool === INVENTORY_POOL || getEvent(session.metadata?.event))) await notifyTeam(session);
     }
+    return json({ received: true });
+  } catch {
+    // Les erreurs ne doivent pas afficher de payload ni de coordonnées client.
+    console.error('webhook_processing_failed');
+    return json({ error: 'webhook_processing_failed' }, 500);
   }
-  return json({ received: true });
 };
-
+export default makeHandler();
 export const config = { path: '/api/stripe-webhook' };

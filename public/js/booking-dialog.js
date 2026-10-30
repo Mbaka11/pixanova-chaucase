@@ -54,6 +54,23 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
   dialog.append(form); document.body.append(dialog);
   let screens=1, quote=null, busy=false, generation=0, controller, returnFocus;
   const choice = () => form.elements.montage.value;
+  const requestStorageKey = `pixanova-checkout:${config.event.id}:${config.language}`;
+  let checkoutRequest;
+  function clearCheckoutRequest() {
+    checkoutRequest = null;
+    try { sessionStorage.removeItem(requestStorageKey); } catch { /* stockage facultatif */ }
+  }
+  function checkoutRequestId() {
+    const signature = JSON.stringify({ screens, montage: choice(), total: quote.totalCents });
+    if (!checkoutRequest) {
+      try { checkoutRequest = JSON.parse(sessionStorage.getItem(requestStorageKey)); } catch { /* stockage facultatif */ }
+    }
+    if (!checkoutRequest || checkoutRequest.signature !== signature || !checkoutRequest.id || Date.now() - checkoutRequest.createdAt > 23 * 3600000) {
+      checkoutRequest = { signature, id: crypto.randomUUID(), createdAt: Date.now() };
+      try { sessionStorage.setItem(requestStorageKey, JSON.stringify(checkoutRequest)); } catch { /* stockage facultatif */ }
+    }
+    return checkoutRequest.id;
+  }
   function controls() {
     fieldset.disabled=busy; close.disabled=back.disabled=busy; retry.disabled=busy;
     pay.disabled=busy||!quote; pay.textContent=busy?ui.checkoutLoading:ui.bookingPay;
@@ -91,13 +108,14 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
     busy=true;controls();status.textContent=ui.checkoutLoading;
     let redirecting=false;
     try {
-      const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:config.event.id,screens,montage:choice(),language:config.language,expectedTotalCents:quote.totalCents})});
+      const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:config.event.id,screens,montage:choice(),language:config.language,expectedTotalCents:quote.totalCents,requestId:checkoutRequestId()})});
       const data=await response.json();
       if(!response.ok){
-        if(data.error==='quote_changed'){busy=false;await loadQuote();throw new Error(ui.quoteChanged);}
+        if(['checkout_expired','idempotency_conflict'].includes(data.error)){clearCheckoutRequest();throw new Error(ui.checkoutError);}
+        if(data.error==='quote_changed'){clearCheckoutRequest();busy=false;await loadQuote();throw new Error(ui.quoteChanged);}
         if(data.error==='not_enough_stock'){await refreshStock?.();throw new Error(ui.checkoutStock);}
         if(data.error==='booking_closed')throw new Error(ui.checkoutClosed);
-        if(['production_inventory_not_ready','tax_rates_not_configured'].includes(data.error))throw new Error(ui.checkoutSetup);
+        if(['production_inventory_not_ready','tax_rates_not_configured','inventory_not_initialized','checkout_paused'].includes(data.error))throw new Error(ui.checkoutSetup);
         throw new Error(ui.checkoutError);
       }
       const url=new URL(data.url);

@@ -7,10 +7,10 @@ export function json(data, status = 200, headers = {}) {
   });
 }
 
-export function getStripe() {
+export function getStripe(options = {}) {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error('STRIPE_SECRET_KEY manquante');
-  return new Stripe(key);
+  return new Stripe(key, { timeout: 10000, maxNetworkRetries: 1, ...options });
 }
 
 export function siteUrl(req) {
