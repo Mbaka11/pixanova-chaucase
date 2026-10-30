@@ -4,6 +4,7 @@ import { localConfig } from './lib/local-config.mjs';
 import { createInventoryDb, stripeEnvironment, fingerprint } from '../server/lib/inventory-db.mjs';
 import { getEvent, INVENTORY_POOL, TOTAL_SCREENS } from '../server/lib/config.mjs';
 import { peakUsageForPeriod } from '../server/lib/stock.mjs';
+import { belongsToPool } from '../server/lib/inventory-scope.mjs';
 
 // Bascule TEST seulement ; refuse de toucher le parc réel.
 // Prérequis : CHECKOUT_PAUSED=true sur le site déployé ET en local.
@@ -26,7 +27,7 @@ try {
   let imported = 0;
   for await (const session of stripe.checkout.sessions.list({ limit: 100, expand: ['data.payment_intent.latest_charge'] })) {
     const m = session.metadata || {}, event = getEvent(m.event);
-    if (m.inventory_pool !== INVENTORY_POOL && !event) continue;
+    if (!belongsToPool(session)) continue;
     if (session.livemode !== false || (m.inventory_pool && m.inventory_pool !== INVENTORY_POOL)) throw new Error('invalid_session_scope');
     const dates = (m.rental_start !== undefined || m.rental_end !== undefined)
       ? { rentalStartsAt: m.rental_start, rentalEndsAt: m.rental_end } : event?.dates;

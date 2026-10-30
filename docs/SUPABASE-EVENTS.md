@@ -5,18 +5,17 @@
 - Projet Supabase dédié, connexion serveur vérifiée sans afficher les clés.
 - Migration `202610300001_inventory_foundation.sql` installée selon confirmation opérateur.
 - **Test PostgreSQL réel réussi** : 32 requêtes concurrentes, exactement 20 acceptées et 12 refusées ; idempotence, conflit de demande, fenêtres adjacentes et isolation test/réel validés. Parc QA temporaire supprimé, parc `pixanova-led` inchangé.
-- Migration `202610300002_inventory_lifecycle.sql` préparée ; les deux migrations, les droits et les transitions/outbox ont passé un contrôle PostgreSQL local (PGlite). **Installation et validation sur Supabase encore attendues**.
-- **76 tests automatisés passent**, dont les doubles submits et la reprise après un crash entre Stripe.create et l'attachement DB.
+- Migration `202610300002_inventory_lifecycle.sql` installée et validée sur Supabase : garde de bascule, transitions désordonnées, remboursement complet, libération atomique et outbox. Les droits et fonctions ont aussi été contrôlés sur PostgreSQL local/PGlite.
+- **77 tests automatisés passent**, dont les doubles submits et la reprise après un crash entre Stripe.create et l'attachement DB.
+- **Intégration Stripe TEST + Supabase validée** dans un parc QA isolé : crash après création récupéré sans seconde session, expiration/libération, paiement navigateur fictif de 1,15 CAD, webhooks signés dupliqués/désordonnés, remboursement partiel de 0,01 CAD conservant le stock, puis remboursement des 1,14 CAD restants libérant le stock. Parc QA nettoyé, seules nos sessions ont été expirées/remboursées. Ce contrôle exerce le handler signé localement, pas encore la livraison webhook publique de Stripe.
 - Adaptateur REST, Checkout durable, webhooks, outbox et tâche planifiée codés, mais **pas activés sur le site**.
 - Le blocage `production_inventory_not_ready` pour les clés réelles reste volontairement en place.
 
-## Seule action SQL restante
+## Schéma installé
 
-Projet `pixanova-events` → **SQL Editor → New query** : copier tout `supabase/migrations/202610300002_inventory_lifecycle.sql`, puis **Run**, une seule fois.
+Les migrations `001` et `002` sont installées. **Ne pas les réexécuter.** Elles ajoutent les transitions d'état, l'outbox de courriels et une garde de bascule `ready=false`, sans activer de paiement.
 
-Cette migration ajoute les transitions d'état, l'outbox de courriels et une garde de bascule `ready=false`. Elle ne supprime aucune réservation et n'active aucun paiement.
-
-Après installation :
+Pour répéter les contrôles :
 
 ```sh
 npm run inventory:test
@@ -83,4 +82,4 @@ Si l'import échoue, le parc reste non prêt et les créations restent suspendue
 
 ## Validation avant déblocage réel
 
-Restent : exécuter la migration 002 et ses contrôles distants, tester l'intégration complète DB + Stripe (timeout, crash après création, événements dupliqués/désordonnés), la bascule et préservation de l'historique, les notifications, puis un test navigateur et l'échec / 3DS. Préparer une bascule réelle distincte ; les scripts de bootstrap et de réconciliation refusent actuellement le mode réel. Garder les clés et webhooks test/réel séparés. Ne lever la garde réelle qu'après ces validations et accord d'ouverture.
+Restent : la bascule et préservation de l'historique, la livraison des webhooks publics et des notifications, le parcours navigateur sur le site basculé et les cas d'échec / 3DS. Préparer une bascule réelle distincte ; les scripts de bootstrap et de réconciliation refusent actuellement le mode réel. Garder les clés et webhooks test/réel séparés. Ne lever la garde réelle qu'après ces validations et accord d'ouverture.

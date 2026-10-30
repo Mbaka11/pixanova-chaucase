@@ -73,7 +73,7 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now, inventory
       ...(checkoutLogo && origin.startsWith('https:') ? {logo:{type:'url',url:new URL(checkoutLogo,origin).href}} : {}),
     };
     const metadata = {
-      inventory_pool: INVENTORY_POOL, event: event.id, event_name: labels.fullName,
+      inventory_pool: inventory?.poolId || INVENTORY_POOL, event: event.id, event_name: labels.fullName,
       screens: String(screens), phase: price.phase, language,
       montage, montage_cents: String(price.montageCents), rental_cents: String(price.rentalCents), montage_hours: String(price.montageHours),
       gst_tax_rate: taxRates[0], qst_tax_rate: taxRates[1], logistics_included: 'true',

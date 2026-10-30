@@ -1,4 +1,5 @@
-import { getEvent, INVENTORY_POOL } from './lib/config.mjs';
+import { INVENTORY_POOL } from './lib/config.mjs';
+import { belongsToPool } from './lib/inventory-scope.mjs';
 import { getStripe, json } from './lib/http.mjs';
 import { notifyTeam } from './lib/notifications.mjs';
 import { createInventory } from './lib/inventory.mjs';
@@ -26,6 +27,7 @@ export const makeHandler = (stripeFactory = getStripe, inventoryFactory = create
       const environment = stripeEnvironment();
       if (event.livemode !== (environment === 'live')) return json({ error: 'webhook_environment_mismatch' }, 400);
       const inventory = inventoryFactory();
+      const poolId = inventory.poolId || INVENTORY_POOL;
       let session, row;
       const object = event.data.object;
       if (event.type === 'charge.refunded') {
@@ -34,12 +36,12 @@ export const makeHandler = (stripeFactory = getStripe, inventoryFactory = create
         // Retrouver la session via Stripe, pas via des métadonnées de charge supposées.
         const sessions = await stripe.checkout.sessions.list({ payment_intent: intentId, limit: 10 });
         if (sessions.has_more) throw new Error('refund_session_ambiguous');
-        const candidates = sessions.data.filter(s => s.metadata?.inventory_pool === INVENTORY_POOL || getEvent(s.metadata?.event));
+        const candidates = sessions.data.filter(s => belongsToPool(s, poolId));
         if (candidates.length > 1) throw new Error('refund_session_ambiguous');
         if (!candidates.length) return json({ received: true });
         session = candidates[0];
       } else session = object;
-      if (session.metadata?.inventory_pool !== INVENTORY_POOL && !getEvent(session.metadata?.event)) return json({ received: true });
+      if (!belongsToPool(session, poolId)) return json({ received: true });
       row = await inventory.db.bySession(environment, session.id);
       if (!row && session.metadata?.inventory_request_id) row = await inventory.find(session.metadata.inventory_request_id);
       // Un événement peut arriver avant que Checkout ait attaché l'ID Stripe.
@@ -53,7 +55,7 @@ export const makeHandler = (stripeFactory = getStripe, inventoryFactory = create
       });
     } else if (!supabaseEnabled() && ['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) {
       const session = event.data.object;
-      if (session.payment_status === 'paid' && (session.metadata?.inventory_pool === INVENTORY_POOL || getEvent(session.metadata?.event))) await notifyTeam(session);
+      if (session.payment_status === 'paid' && belongsToPool(session)) await notifyTeam(session);
     }
     return json({ received: true });
   } catch {

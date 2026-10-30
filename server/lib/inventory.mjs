@@ -8,19 +8,19 @@ export const stripeCreationKey = (environment, requestId) => `pixanova-events:${
 export const requestFingerprint = body => fingerprint({ eventId: body.eventId, screens: body.screens,
   montage: body.montage ?? 'none', language: body.language ?? 'fr', expectedTotalCents: body.expectedTotalCents ?? null });
 
-export function createInventory({ db = createInventoryDb(), environment = stripeEnvironment() } = {}) {
+export function createInventory({ db = createInventoryDb(), environment = stripeEnvironment(), poolId = INVENTORY_POOL } = {}) {
   return {
-    db, environment,
+    db, environment, poolId,
     async stock(event) {
-      const pool = await db.pool(environment, INVENTORY_POOL);
+      const pool = await db.pool(environment, poolId);
       if (!pool.ready || pool.capacity !== TOTAL_SCREENS) throw new Error('inventory_not_initialized');
-      const rows = await db.rows(environment, INVENTORY_POOL);
+      const rows = await db.rows(environment, poolId);
       const taken = peakUsageForPeriod(event.dates, rows.map(r => ({ screens: r.screens, rentalStartsAt: r.rental_start, rentalEndsAt: r.rental_end })));
       return { eventId: event.id, total: pool.capacity, taken, remaining: Math.max(0, pool.capacity - taken),
         rentalStartsAt: event.dates.rentalStartsAt, rentalEndsAt: event.dates.rentalEndsAt };
     },
     async reserve(body, event, price, params) {
-      return db.reserve({ p_environment: environment, p_pool_id: INVENTORY_POOL,
+      return db.reserve({ p_environment: environment, p_pool_id: poolId,
         p_request_id: body.requestId, p_request_fingerprint: requestFingerprint(body),
         p_event_id: event.id, p_screens: body.screens,
         p_rental_start: event.dates.rentalStartsAt, p_rental_end: event.dates.rentalEndsAt,

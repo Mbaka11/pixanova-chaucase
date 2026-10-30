@@ -6,6 +6,7 @@ import { createInventory, validRequestId, requestFingerprint, stripeCreationKey 
 import { makeHandler as checkoutHandler } from '../server/create-checkout.mjs';
 import { makeHandler as webhookHandler } from '../server/stripe-webhook.mjs';
 import { getEvent } from '../server/lib/config.mjs';
+import { belongsToPool } from '../server/lib/inventory-scope.mjs';
 
 process.env.STRIPE_SECRET_KEY = 'sk_test_placeholder';
 process.env.STRIPE_TAX_RATE_TPS = 'txr_tps';
@@ -36,6 +37,11 @@ async function usingDb(fn) {
   try { await fn(); } finally { delete process.env.INVENTORY_BACKEND; }
 }
 
+test('inventory : un événement connu ne traverse jamais un autre parc explicite', () => {
+  assert.equal(belongsToPool({metadata:{event:event.id}}),true);
+  assert.equal(belongsToPool({metadata:{event:event.id,inventory_pool:'another-pool'}}),false);
+  assert.equal(belongsToPool({metadata:{event:'qa',inventory_pool:'isolated-qa'}},'isolated-qa'),true);
+});
 test('inventory : clés test/réel identifiées, aucune valeur inconnue acceptée', () => {
   assert.equal(stripeEnvironment('rk_test_x'), 'test'); assert.equal(stripeEnvironment('sk_live_x'), 'live');
   assert.throws(() => stripeEnvironment('unknown'));

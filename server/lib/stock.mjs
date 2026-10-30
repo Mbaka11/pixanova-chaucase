@@ -1,4 +1,5 @@
-import { getEvent, INVENTORY_POOL, TOTAL_SCREENS } from './config.mjs';
+import { getEvent, TOTAL_SCREENS } from './config.mjs';
+import { belongsToPool } from './inventory-scope.mjs';
 
 /**
  * Pic d’utilisation dans [début, fin[. Les locations ne se chevauchant pas
@@ -31,7 +32,7 @@ export async function countTakenScreens(stripe, event, now = Date.now()) {
   for await (const session of list) {
     const metadata = session.metadata || {};
     const legacyEvent = getEvent(metadata.event);
-    if (metadata.inventory_pool !== INVENTORY_POOL && !legacyEvent) continue;
+    if (!belongsToPool(session)) continue;
     const holding = session.status === 'open' && (!session.expires_at || session.expires_at * 1000 > now);
     const complete = session.status === 'complete';
     if (!holding && !complete) continue;
