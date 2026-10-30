@@ -356,17 +356,16 @@
     </div>
     <div class="montage">
       <div class="mont">
-        <h3>Montage simple</h3>
+        <h3 data-montage-simple-title></h3>
         <div class="p"><span data-montage-simple></span> <small>avant taxes</small></div>
-        <p>Votre logo, 3 à 5 photos, du texte et des transitions. Propre, clair, efficace.</p>
+        <p data-montage-simple-description></p>
       </div>
       <div class="mont">
-        <h3>Montage animé</h3>
+        <h3 data-montage-animated-title></h3>
         <div class="p"><span data-montage-animated></span> <small>avant taxes</small></div>
-        <p>Logo animé, produits en mouvement et vidéos. Pour faire arrêter le monde dans l'allée.</p>
+        <p data-montage-animated-description></p>
       </div>
     </div>
-    <p class="montage-booking-note" id="montageBookingNote"></p>
     <div class="free">Vous avez déjà vos fichiers? <b>Envoyez-les gratuitement</b> en JPEG, PNG ou MP4 (516 x 1032 px).</div>
   </div>
 </section>
@@ -404,7 +403,13 @@
   <div class="wrap narrow">
     <div class="head center"><div class="eyebrow" style="color:#1D4FC4">Questions fréquentes</div><h2>Tout ce que vous voulez savoir avant de réserver</h2></div>
     <details><summary>Qu'est-ce qui est inclus dans le prix?</summary><p>Tout : la livraison et l'installation le <span data-installation-date></span>, la réception et le test de vos visuels sur l'écran, la clé USB préchargée, la ligne d'assistance pendant le salon et la désinstallation. Seules les taxes (TPS et TVQ) s'ajoutent.</p></details>
-    <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Pas du tout. Choisissez un montage facultatif dans le récapitulatif avant Stripe. Votre location et votre montage sont réglés en un seul paiement. Notre infographiste crée ensuite le contenu à partir de votre logo et de vos photos.</p></details>
+    <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Pas du tout. Choisissez un forfait de création dans le récapitulatif avant le paiement. Notre équipe prépare des visuels sur mesure pour votre marque.</p></details>
+    <details id="creation-faq"><summary>Quelle différence entre création graphique et motion design?</summary><div class="creation-faq">
+      <p><strong data-montage-simple-title></strong><span data-montage-simple-example></span></p>
+      <p><strong data-montage-animated-title></strong><span data-montage-animated-example></span></p>
+      <a href="#preuves">Voir des réalisations Pixanova</a>
+    </div></details>
+    <details><summary>Que comprennent les forfaits de création?</summary><p data-montage-scope></p></details>
     <details><summary>Combien d'écrans pour un kiosque 10 x 10?</summary><p>Trois écrans côte à côte couvrent 288 cm, soit presque toute la largeur d'un kiosque de 10 pieds. C'est le choix de beaucoup d'exposants. Si vous voulez plus de trois écrans, utilisez le compteur de la troisième fiche : le prix par écran reste le même.</p></details>
     <details><summary>Quel format de fichiers dois-je envoyer?</summary><p>JPEG, PNG ou MP4. Pour un écran : 516 x 1032 px. Pour deux écrans côte à côte : 1032 x 1032 px. Pour trois : 1548 x 1032 px. Nous validons chaque fichier sur l'écran avant le salon.</p></details>
     <details><summary>Jusqu'à quand puis-je envoyer mes visuels?</summary><p>Jusqu'au <span data-artwork-date-full></span>. Après votre paiement, nous vous écrivons pour récupérer vos visuels, puis nous vous envoyons des rappels.</p></details>
@@ -429,20 +434,28 @@
 
 <!-- ============ MERCI ============ -->
 <main data-route="/merci" hidden>
-<div class="wrap page narrow">
-  <div class="ok-badge"></div>
-  <h1>Merci! Votre paiement est confirmé</h1>
-  <p style="color:var(--muted)">Stripe vous envoie votre reçu par courriel. Votre écran est réservé pour <span data-event-full-name></span>.</p>
-  <div class="card" style="margin-top:26px">
-    <h2>Et maintenant?</h2>
-    <ol class="timeline">
-      <li class="done"><div class="dot">✓</div><div><b>Paiement confirmé</b><span>Votre prix est bloqué.</span></div></li>
-      <li class="now"><div class="dot">2</div><div><b>Nous vous écrivons pour vos visuels</b><span>Un courriel de Pixanova vous dit comment nous envoyer votre logo et vos visuels (JPEG, PNG ou MP4). Date limite : <span data-artwork-date-full></span>.</span></div></li>
-      <li><div class="dot">3</div><div><b>Nous validons votre numéro de kiosque</b><span>Auprès de <span data-event-name></span>. Si quelque chose cloche, nous vous écrivons.</span></div></li>
-      <li><div class="dot">4</div><div><b>Installation le <span data-installation-date></span></b><span>Livraison, installation et test. Salon <span data-event-period></span>. Désinstallation à la fermeture.</span></div></li>
-    </ol>
+<div class="wrap page confirmation-page">
+  <div class="confirmation-hero">
+    <div class="ok-badge" aria-hidden="true"></div>
+    <h1>Vérification de votre paiement…</h1>
+    <p id="confirmationIntro"></p>
   </div>
-  <p style="margin-top:22px;font-size:14px;color:var(--muted)">Une question? <a href="mailto:info@pixanova.ca">info@pixanova.ca</a> · <span data-contact-phone></span> · <a href="#/">Retour à l'accueil</a></p>
+  <div class="confirmation-grid">
+    <section class="card receipt-card" id="reservationSummary" aria-labelledby="receiptTitle" hidden>
+      <h2 id="receiptTitle">Résumé du paiement</h2>
+      <p class="receipt-event" data-event-full-name></p>
+      <dl id="receiptAmounts"></dl>
+    </section>
+    <section class="card confirmation-next">
+      <h2>Et maintenant?</h2>
+      <ol class="timeline">
+        <li class="done"><div class="dot">✓</div><div><b>Paiement confirmé</b><span>Votre prix est bloqué.</span></div></li>
+        <li class="now"><div class="dot">2</div><div><b>Nous préparons la suite avec vous</b><span class="step-state">En cours</span><span>Nous vous contactons pour vos visuels, votre numéro de kiosque et les détails de l’installation.</span></div></li>
+        <li><div class="dot">3</div><div><b>Installation le <span data-installation-date></span></b><span>Livraison, installation et test. Salon <span data-event-period></span>. Désinstallation à la fermeture.</span></div></li>
+      </ol>
+    </section>
+  </div>
+  <p class="confirmation-contact">Une question? <a href="mailto:info@pixanova.ca">info@pixanova.ca</a> · <span data-contact-phone></span> · <a href="#/">Retour à l'accueil</a></p>
 </div>
 </main>
 

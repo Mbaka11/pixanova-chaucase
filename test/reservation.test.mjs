@@ -8,11 +8,29 @@ test('confirmation vérifiée et récapitulatif sans donnée personnelle',async(
  const response=await handler(session)(request());assert.equal(response.status,200);
  const body=await response.json();assert.equal(body.status,'paid');assert.equal(body.totalCents,125898);assert.equal(body.screens,2);
  assert.equal(JSON.stringify(body).includes('private'),false);assert.equal(JSON.stringify(body).includes('5551234567'),false);
- assert.equal(response.headers.get('cache-control'),'no-store');
+ assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(body.rentalCents,109500);assert.equal(body.includedLogistics,true);
+ assert.equal(body.gstCents,null);assert.equal(body.qstCents,null);
 });
 test('le montage et son prix payé sont conservés sans recalcul au tarif courant',async()=>{
- const response=await handler({...session,metadata:{...session.metadata,montage:'simple',montage_cents:'25000'},amount_subtotal:134500,amount_total:154642})(request());
+ const response=await handler({...session,metadata:{...session.metadata,montage:'simple',montage_cents:'25000'},amount_subtotal:134500,amount_total:154642,total_details:{amount_tax:20142}})(request());
  const body=await response.json();assert.equal(body.montage,'simple');assert.equal(body.montageCents,25000);assert.equal(body.totalCents,154642);
+});
+test('TPS et TVQ viennent de la ventilation Stripe, sans recalcul des anciens prix',async()=>{
+ const total_details={amount_tax:16398,breakdown:{taxes:[{amount:5475,rate:{id:'txr_old_gst',percentage:5}},{amount:10923,rate:{id:'txr_old_qst',percentage:9.975}}]}};
+ const body=await(await handler({...session,total_details,collected_information:{individual_name:'private contact'}})(request())).json();
+ assert.equal(body.gstCents,5475);assert.equal(body.qstCents,10923);assert.equal(JSON.stringify(body).includes('private'),false);
+});
+test('les identifiants de taxes figés prennent priorité sur les pourcentages futurs',async()=>{
+ const metadata={...session.metadata,gst_tax_rate:'txr_historical_gst',qst_tax_rate:'txr_historical_qst'};
+ const total_details={amount_tax:16398,breakdown:{taxes:[{amount:5475,rate:{id:'txr_historical_gst',percentage:7}},{amount:10923,rate:{id:'txr_historical_qst',percentage:5}}]}};
+ const body=await(await handler({...session,metadata,total_details})(request())).json();assert.equal(body.gstCents,5475);assert.equal(body.qstCents,10923);
+});
+test('une taxe inconnue ou une ventilation incomplète garde la taxe globale sans inventer de split',async()=>{
+ const body=await(await handler({...session,total_details:{amount_tax:16398,breakdown:{taxes:[{amount:16398,rate:{percentage:15}}]}}})(request())).json();
+ assert.equal(body.gstCents,null);assert.equal(body.qstCents,null);assert.equal(body.taxCents,16398);
+});
+test('ne pas annoncer de logistique offerte si la réservation dit le contraire',async()=>{
+ const body=await(await handler({...session,metadata:{...session.metadata,logistics_included:'false'}})(request())).json();assert.equal(body.includedLogistics,false);
 });
 test('métadonnées de montage incohérentes refusées',async()=>{
  for(const extra of [{montage:'oops'},{montage:'none',montage_cents:'1'},{montage:'simple',montage_cents:'-1'},{montage:'simple',montage_cents:'0'}])assert.equal((await handler({...session,metadata:{...session.metadata,...extra}})(request())).status,404);

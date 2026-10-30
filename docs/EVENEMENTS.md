@@ -62,13 +62,22 @@ Pour 1 ou 2 écrans, le prix est celui du forfait; dès 3, c’est la quantité 
 
 Dans `config/platform.json`, les montants sont en cents CAD :
 
-- `montage.simpleCents: 15000` et `animatedCents: 35000` pour 1 écran;
-- `montage.multipleScreensExtraCents: 10000`, ajouté **une seule fois** dès 2 écrans;
+- `montage.simpleCents: 20000` / `simpleHours: 4` : création graphique;
+- `montage.animatedCents: 40000` / `animatedHours: 10` : motion design;
+- `montage.multipleScreensExtraCents: 0` : **aucun supplément selon la quantité**, vérifié à la validation;
 - `taxes.gstPercent: 5`, `qstPercent: 9.975`.
 
 `none` est gratuit et choisi par défaut; seules les valeurs `none`, `simple`, `animated` sont acceptées. Le montage forme une ligne supplémentaire dans **le même Checkout**, sans consommer d’écran. Aucun nouvel achat n’est proposé sur la confirmation.
 
 Les deux identifiants de taux restent privés dans `.env` / Netlify. Le serveur vérifie que les taux Stripe sont actifs, exclusifs et correspondent aux pourcentages configurés. Il arrondit chaque taxe de chaque ligne comme Stripe, pas le panier global. La réponse `/api/quote` ne crée aucun blocage.
+
+## Marque dans Stripe
+
+`brand.checkoutName` et `brand.checkoutLogo` définissent le nom et le logo Checkout communs. Un événement peut fournir `checkoutLogo` pour sa composition Pixanova × partenaire. Les PNG sont dans `public/assets/images/checkout/`, dérivés des logos existants.
+
+Le serveur utilise `branding_settings` par session : aucun changement global du compte Stripe, et aucun serveur à dupliquer par événement. L’URL du logo est construite à partir de **`SITE_URL`**, qui doit être l’adresse publique stable en HTTPS, pas le permalien d’un ancien déploiement. En local HTTP, le logo est omis car Stripe ne peut pas charger localhost; le nom et les couleurs restent personnalisés.
+
+Une ligne de livraison/installation à **0 $** rend l’inclusion explicite dans Stripe. Elle ne modifie ni le total ni le nombre d’écrans. Aucun prix barré fictif n’est affiché.
 
 ## Français / anglais
 

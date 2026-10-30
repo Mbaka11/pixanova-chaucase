@@ -1,5 +1,5 @@
 import { copy, money } from './i18n.mjs';
-import { montageChoices, montagePrice } from './montage.mjs';
+import { montageChoices, montagePrice, montageHours } from './montage.mjs';
 
 export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
   const ui = copy(config.language);
@@ -17,7 +17,6 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
   const close = el('button', 'booking-close', '×'); close.type = 'button'; close.setAttribute('aria-label', ui.bookingClose);
   header.append(title, close);
   const eventLine = el('p', 'booking-event');
-  const intro = el('p', 'booking-intro', ui.bookingIntro);
   const fieldset = el('fieldset', 'booking-options');
   fieldset.append(el('legend', '', ui.montageLegend));
   const choices = new Map();
@@ -28,14 +27,17 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
     const top = el('span', 'booking-option-top');
     const name = el('strong', '', ui.montageLabel(choice));
     const price = el('strong', 'booking-option-price');
-    top.append(name, price); content.append(top, el('span', 'booking-option-description', ui.montageDescription(choice)));
+    top.append(name, price); content.append(top, el('span', 'booking-option-description', ui.montageDescription(choice, montageHours(config.platform, choice))));
     label.append(input, content); fieldset.append(label); choices.set(choice, { input, price });
     input.addEventListener('change', () => { if (!busy) void loadQuote(); });
   }
-  const extra = el('p', 'booking-hint', ui.montageExtra(money(config.platform.montage.multipleScreensExtraCents, config.language)));
   const summary = el('dl', 'booking-summary');
   const values = {};
   for (const [key, label] of [['rentalCents',ui.bookingRental],['montageCents',ui.montageLegend],['subtotalCents',ui.bookingSubtotal],['gstCents',`${ui.gst} (${config.platform.taxes.gstPercent.toLocaleString(ui.locale)} %)`],['qstCents',`${ui.qst} (${config.platform.taxes.qstPercent.toLocaleString(ui.locale)} %)`],['totalCents',ui.bookingTotal]]) {
+    if (key === 'subtotalCents') {
+      const included = el('div', 'booking-included');
+      included.append(el('dt', '', ui.logistics), el('dd', '', ui.offered)); summary.append(included);
+    }
     const row = el('div', key === 'totalCents' ? 'booking-total' : '');
     const value = el('dd', '', '—'); value.id = `booking-${key}`;
     row.append(el('dt', '', label), value); summary.append(row); values[key] = value;
@@ -46,7 +48,7 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
   const back = el('button', 'btn outline', ui.bookingCancel); back.type='button';
   const pay = el('button', 'btn', ui.bookingPay); pay.type='submit'; pay.id='bookingPay';
   actions.append(back, pay);
-  form.append(header, eventLine, intro, fieldset, extra, summary, status, retry, actions, el('p','booking-hint',ui.bookingTaxNote));
+  form.append(header, eventLine, fieldset, summary, status, retry, actions);
   dialog.append(form); document.body.append(dialog);
   let screens=1, quote=null, busy=false, generation=0, controller, returnFocus;
   const choice = () => form.elements.montage.value;
@@ -61,6 +63,8 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
     quote=null; retry.hidden=true; status.textContent=ui.quoteLoading;
     Object.values(values).forEach(value=>{value.textContent='—';}); controls();
     const montage=choice();
+    values.montageCents.parentElement.hidden=montage==='none';
+    values.montageCents.previousElementSibling.textContent=ui.montageLabel(montage);
     try {
       const response=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:config.event.id,screens,montage}),signal:controller.signal});
       const data=await response.json();

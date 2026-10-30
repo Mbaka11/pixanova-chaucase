@@ -5,6 +5,7 @@
   "edition": "2027",
   "city": "Drummondville",
   "logo": "/assets/images/chaucase.jpg",
+  "checkoutLogo": "/assets/images/checkout/chaucase-2027.png",
   "description": "Les écrans LED Pixanova pour les exposants de ChauCase 2027.",
   "translations": {
     "en": { "description": "Pixanova LED screens for exhibitors at ChauCase 2027." }

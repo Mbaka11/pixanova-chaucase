@@ -37,10 +37,10 @@ Pour arrêter : Ctrl+C dans chaque terminal.
 ## Parcours
 
 1. Le bouton d’une offre ouvre le récapitulatif FR/EN. **Sans montage** est choisi par défaut.
-2. Choix facultatif : simple 150 $ / 250 $ dès 2 écrans; animé 350 $ / 450 $, avant taxes. Les trois fiches restent inchangées.
+2. Choix facultatif : création graphique **200 $ / 4 h**, motion design **400 $ / 10 h**, avant taxes, sans supplément selon la quantité. Les trois fiches restent inchangées.
 3. `/api/quote` calcule écrans, montage, TPS, TVQ et total sans bloquer de stock. Les taux Stripe doivent être actifs, exclusifs et correspondre aux pourcentages configurés.
-4. « Continuer vers Stripe » transmet événement, quantité, montage, langue et ancien total attendu. `/api/checkout` recalcule tout : un écart exige une nouvelle confirmation, sans créer de session. Le montant Stripe créé est aussi contrôlé.
-5. **Un seul Checkout et un seul paiement**, avec une ligne écrans et éventuellement une ligne montage. Kiosque et entreprise obligatoires; adresse et téléphone collectés.
+4. « Continuer vers le paiement » transmet événement, quantité, montage, langue et ancien total attendu. `/api/checkout` recalcule tout : un écart exige une nouvelle confirmation, sans créer de session. Le montant Stripe créé est aussi contrôlé.
+5. **Un seul Checkout et un seul paiement**, avec une ligne écrans, éventuellement une ligne création et une ligne livraison/installation à **0 $**. Nom complet, courriel, téléphone, kiosque et entreprise requis; adresse de facturation collectée. Le nom et le logo sont personnalisés par session.
 6. Seuls les écrans sont temporairement bloqués pendant la session (30 minutes).
 7. Au retour, `/api/reservation` vérifie Stripe et affiche aussi le montage payé. `merci=1` seul ne confirme rien. Aucun achat supplémentaire sur cette page.
 8. Le webhook vérifie la signature et traite la notification. Sans Resend, il journalise seulement un résumé non personnel : aucun courriel d’équipe envoyé.
@@ -79,22 +79,28 @@ Les neuf sessions suivantes ont réellement été créées dans Stripe **test**,
 | Écrans | Montage | Total CAD, taxes comprises |
 |---|---|---:|
 | 1 | Aucun | 688,70 $ |
-| 1 | Simple | 861,16 $ |
-| 1 | Animé | 1 091,11 $ |
+| 1 | Création graphique | 918,65 $ |
+| 1 | Motion design | 1 148,60 $ |
 | 2 | Aucun | 1 258,98 $ |
-| 2 | Simple | 1 546,42 $ |
-| 2 | Animé | 1 776,37 $ |
+| 2 | Création graphique | 1 488,93 $ |
+| 2 | Motion design | 1 718,88 $ |
 | 3 | Aucun | 1 828,10 $ |
-| 3 | Simple | 2 115,54 $ |
-| 3 | Animé | 2 345,49 $ |
+| 3 | Création graphique | 2 058,05 $ |
+| 3 | Motion design | 2 288,00 $ |
 
-Arrondir chaque taxe **par ligne**, et non sur le sous-total global : 2 écrans + montage simple donnent TPS 67,25 $ et TVQ 134,17 $, soit 1 546,42 $ au total. Cette méthode a été comparée aux valeurs Stripe, pas seulement à un calcul simulé.
+Arrondir chaque taxe **par ligne**, et non sur le sous-total global. Avec les forfaits actuels : 2 écrans + création graphique donnent TPS 64,75 $ et TVQ 129,18 $, soit 1 488,93 $ au total. La méthode a été comparée aux valeurs Stripe, pas seulement à un calcul simulé. Une ancienne commande avec création à 250 $ reste à 1 546,42 $ : ne jamais la recalculer au nouveau tarif.
 
-Un paiement supplémentaire **de test** a été effectué dans le navigateur : **2 écrans + montage simple = 1 546,42 $**, retour anglais confirmé, montage payé affiché, aucun bouton d’achat supplémentaire. Ce paiement a été intégralement remboursé.
+Un paiement **de test** a été effectué dans le navigateur avec le nom complet du contact : **2 écrans + création graphique = 1 488,93 $**, retour anglais confirmé, résumé structuré avec TPS/TVQ et logistique offerte, aucun achat supplémentaire. Ce paiement a été intégralement remboursé.
 
 Contrôles navigateur : ordinateur FR, mobile EN sans débordement, Échap et restitution du focus, impossibilité de focaliser l’arrière-plan, choix gratuit réinitialisé, total indisponible bloquant le paiement avec bouton de reprise, triple clic n’envoyant qu’un POST Checkout. Aucun écran n’est bloqué à la simple ouverture de la modale.
 
 Les réservations déjà présentes ont été conservées et la disponibilité comparée avant/après chaque série d’essais. Seuls les blocages et paiements créés par ces essais ont été nettoyés. Ne jamais ramener artificiellement le stock à 20 en expirant ou remboursant les commandes d’un autre essai/utilisateur.
+
+## Affichage de l’heure dans le Dashboard Stripe
+
+Le décalage signalé concerne le tableau de bord, pas les dates de location. Dans les **paramètres du compte Stripe**, régler le fuseau d’affichage sur **America/Toronto**, qui couvre Montréal et les changements d’heure saisonniers. Cette préférence nécessite une action dans le compte; elle n’a pas été modifiée par le code.
+
+Les timestamps de l’API et certains journaux/exports restent en UTC : c’est normal. Ne pas modifier `Date.now()`, les timestamps Stripe ni les périodes de réservation pour compenser cet affichage. [Référence Stripe](https://support.stripe.com/questions/customize-the-time-zone-on-the-dashboard?locale=en-GB).
 
 ## Limites avant production
 

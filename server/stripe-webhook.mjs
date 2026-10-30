@@ -13,6 +13,7 @@ async function notifyTeam(session) {
     `Écrans : ${session.metadata.screens}`,
     `Montage : ${copy('fr').montageLabel(session.metadata.montage || 'none')}`,
     `Total payé : ${(session.amount_total / 100).toFixed(2)} $ CAD (taxes incluses)`,
+    `Contact : ${session.collected_information?.individual_name || session.customer_details?.individual_name || session.customer_details?.name || '—'}`,
     `Entreprise : ${fields.entreprise || '—'}`,
     `Kiosque : ${fields.kiosque || '—'} (à vérifier)`,
     `Courriel : ${session.customer_details?.email || '—'}`,

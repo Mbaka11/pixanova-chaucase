@@ -1,6 +1,5 @@
 .event-loading body{visibility:hidden}
-.confirmation-pending main[data-route="/merci"] .card{display:none}
-.reservation-summary{margin:22px 0;padding:16px;background:#e3ecff;border-radius:10px;font-weight:600;line-height:1.6}
+.confirmation-pending main[data-route="/merci"] .card,.confirmation-pending main[data-route="/merci"] .ok-badge{display:none}
 .top nav.language-switch{display:flex;margin-left:auto;gap:2px;flex-shrink:0;border:1px solid #ffffff45;border-radius:20px;padding:3px}
 .language-switch a{font-size:12px;font-weight:700;color:#dbe6ff;text-decoration:none;padding:5px 8px;border-radius:16px}
 .language-switch a[aria-current="page"]{background:#fff;color:#0A1A33}
@@ -1030,6 +1029,26 @@ body.nohome #banner{display:none}
 .amp small{display:block;flex-basis:100%}
 .amp small[hidden]{display:none}
 
+/* Confirmation vérifiée : succès centré, reçu lisible, trois étapes. */
+.confirmation-page{max-width:1000px;padding-top:52px}
+.confirmation-hero{max-width:660px;margin:0 auto 32px;text-align:center}
+.confirmation-hero .ok-badge{margin:0 auto 20px;background:var(--ok)}
+.confirmation-hero h1{line-height:1.15;margin-bottom:14px}.confirmation-hero p{color:var(--muted);font-size:16px;max-width:520px;margin:0 auto;line-height:1.6}
+.confirmation-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.confirmation-grid .card{margin:0;padding:28px;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px #10234605}
+.confirmation-grid h2{font-size:21px;margin:0 0 8px}.receipt-card[hidden]{display:none!important}
+.receipt-event{font-size:14px;color:var(--muted);margin-bottom:20px}
+#receiptAmounts{margin:0}#receiptAmounts>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;font-size:14px}#receiptAmounts dt{color:var(--muted)}#receiptAmounts dd{margin:0;text-align:right;font-weight:600;white-space:nowrap}
+#receiptAmounts .receipt-included dd{color:#16734d;background:#e8f7ef;padding:3px 8px;border-radius:20px;font-size:12px}
+#receiptAmounts .receipt-subtotal{border-top:1px solid var(--line);margin-top:12px;padding-top:16px}
+#receiptAmounts .receipt-total{border-top:1px solid var(--line);margin-top:12px;padding-top:18px;font-size:18px}#receiptAmounts .receipt-total dt{color:var(--ink);font-weight:800}#receiptAmounts .receipt-total dd{color:#146346;font-weight:800}
+.confirmation-next .timeline{margin-top:24px}.confirmation-next .timeline li:last-child{padding-bottom:0}
+.confirmation-next .timeline li>div:last-child>span:not(.step-state){display:block;line-height:1.55;margin-top:5px}
+.timeline .step-state{display:inline-block;font-size:11px;font-weight:700;color:var(--blue);background:#eef4ff;border-radius:20px;padding:2px 8px;margin-top:7px}
+.confirmation-contact{text-align:center;margin-top:30px;font-size:13px;color:var(--muted);line-height:1.8}
+.creation-faq strong{display:block;color:var(--ink);margin-bottom:5px}.creation-faq a{font-size:14px;font-weight:700;color:var(--blue);text-decoration:underline}
+@media(max-width:760px){.confirmation-page{padding-top:30px}.confirmation-hero{margin-bottom:24px}.confirmation-grid{grid-template-columns:1fr;gap:18px}.confirmation-grid .card{padding:22px}.confirmation-hero h1{font-size:28px}.confirmation-hero p{font-size:14px}#receiptAmounts .receipt-total{font-size:17px}}
+
 /* Récapitulatif et montage facultatif avant l’unique paiement. */
 .booking-dialog{width:min(620px,calc(100% - 28px));max-height:calc(100dvh - 32px);margin:auto;padding:28px;border:0;border-radius:16px;background:#fff;color:var(--ink);box-shadow:0 24px 100px #0005;overflow:auto;overscroll-behavior:contain}
 .booking-dialog::backdrop{background:#06142bd9;backdrop-filter:blur(3px)}
@@ -1037,16 +1056,15 @@ body.nohome #banner{display:none}
 .booking-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .booking-header h2{font-size:28px;line-height:1.15;margin:0}
 .booking-close{border:0;background:#eef2f8;border-radius:50%;width:32px;height:32px;flex-shrink:0;font-size:24px;cursor:pointer;color:var(--ink)}
-.booking-event{font-weight:700;margin:12px 0 6px}.booking-intro{color:var(--muted);font-size:14px;margin-bottom:20px}
+.booking-event{font-weight:700;margin:12px 0 20px}
 .booking-options{border:0;padding:0;margin:0;min-width:0}.booking-options legend{font-weight:700;padding:0;margin-bottom:10px}
 .booking-option{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:14px;margin:8px 0;cursor:pointer}
 .booking-option:has(input:checked){border-color:var(--blue);background:#eef4ff;box-shadow:inset 0 0 0 1px var(--blue)}
 .booking-option>input{width:18px;height:18px;flex-shrink:0;margin:3px 0 0;accent-color:var(--blue)}
 .booking-option-content{display:block;min-width:0;flex:1}.booking-option-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.booking-option-price{white-space:nowrap}
 .booking-option-description{display:block;font-size:12px;line-height:1.45;color:var(--muted);margin-top:4px}
-.booking-hint{font-size:12px;color:var(--muted);line-height:1.5;margin:12px 0}
 .booking-summary{border-top:1px solid var(--line);padding-top:12px;margin:18px 0 0}.booking-summary>div{display:flex;justify-content:space-between;gap:16px;padding:5px 0;font-size:14px}.booking-summary dt{color:var(--muted)}.booking-summary dd{margin:0;white-space:nowrap;font-weight:600}
-.booking-summary .booking-total{font-size:19px;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}.booking-total dt{color:var(--ink);font-weight:800}
+.booking-summary .booking-included dd{color:#16734d}.booking-summary .booking-total{font-size:19px;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}.booking-total dt{color:var(--ink);font-weight:800}
 .booking-status{font-size:14px;color:#8f381b;margin:12px 0}.booking-status:empty{display:none}.booking-retry{border:0;background:transparent;color:var(--blue);text-decoration:underline;cursor:pointer;font-weight:700}
 .booking-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}.booking-actions .btn{font-size:14px;padding:12px 18px}.booking-dialog button:disabled{opacity:.55;cursor:not-allowed}
 .booking-dialog :focus-visible{outline:3px solid var(--blue);outline-offset:3px}

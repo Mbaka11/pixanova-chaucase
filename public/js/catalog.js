@@ -1,6 +1,6 @@
 import catalog from './catalog-data.js';
-import { eventLabels, computePrice, bookingIsOpen } from './events-shared.js';
-import { copy, money, languageUrl } from './i18n.mjs';
+import { eventLabels, bookingIsOpen } from './events-shared.js';
+import { copy, languageUrl } from './i18n.mjs';
 import { language, localizeEvent, translateStaticDOM, installLanguageSwitcher } from './language.js';
 const ui = copy(language);
 translateStaticDOM();
@@ -23,17 +23,13 @@ for (const source of events.filter((item) => item.active)) {
   const event = localizeEvent(source);
   const labels = eventLabels(event, platform, language);
   const open = bookingIsOpen(event);
-  const article = el('article', 'event-card');
+  const article = el('a', 'event-card');
+  article.href = languageUrl(`/evenement.html?event=${encodeURIComponent(event.id)}`, language);
   const imageBox = el('div', 'event-card-logo');
   const image = el('img'); image.src = event.logo; image.alt = event.name; imageBox.append(image);
   const body = el('div', 'event-card-body');
-  body.append(el('h3', '', labels.fullName), el('p', 'event-meta', `${event.city} · ${labels.period}`), el('p', '', event.description));
-  const price = computePrice(event, 1).totalCents;
-  const priceLabel = el('p', 'event-price', ui.from(money(price, language)));
-  priceLabel.append(el('small', '', ui.catalogUnit(labels.durationDays)));
-  body.append(priceLabel);
-  const link = el('a', 'btn', open ? ui.discover : ui.closedEvent);
-  link.href = languageUrl(`/evenement.html?event=${encodeURIComponent(event.id)}`, language);
-  body.append(link); article.append(imageBox, body); container.append(article);
+  body.append(el('h2', '', labels.fullName), el('p', 'event-meta', labels.period));
+  const action = el('span', 'event-card-action', open ? ui.discover : ui.closedEvent);
+  article.append(imageBox, body, action); container.append(article);
 }
 if (!container.childElementCount) container.append(el('p', '', ui.empty));

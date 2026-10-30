@@ -6,9 +6,9 @@
   "currency": "cad",
   "inventory": { "totalScreens": 20, "holdMinutes": 30 },
   "contact": { "email": "info@pixanova.ca", "phone": "+1 (438) 491-0384" },
-  "brand": { "logo": "/assets/images/px-crop-sm.png", "website": "https://pixanova.ca/" },
+  "brand": { "logo": "/assets/images/px-crop-sm.png", "checkoutLogo": "/assets/images/checkout/pixanova.png", "checkoutName": "Pixanova", "website": "https://pixanova.ca/" },
   "screen": { "valueCents": 700000, "widthCm": 96, "widthPx": 516, "heightPx": 1032 },
-  "montage": { "simpleCents": 15000, "animatedCents": 35000, "multipleScreensExtraCents": 10000 },
+  "montage": { "simpleCents": 20000, "animatedCents": 40000, "multipleScreensExtraCents": 0, "simpleHours": 4, "animatedHours": 10 },
   "taxes": { "gstPercent": 5, "qstPercent": 9.975 },
   "analytics": { "ga4": "", "clarity": "", "metaPixel": "" }
 }

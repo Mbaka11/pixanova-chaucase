@@ -1,6 +1,6 @@
 import { computePrice, isValidScreens } from './events.mjs';
-import { montagePrice, isValidMontage } from './montage.mjs';
-export { montagePrice, isValidMontage, montageChoices } from './montage.mjs';
+import { montagePrice, montageHours, isValidMontage } from './montage.mjs';
+export { montagePrice, montageHours, isValidMontage, montageChoices } from './montage.mjs';
 
 // Stripe arrondit chaque taxe de chaque ligne au cent. Ne pas taxer le grand sous-total
 // en une seule fois : cela peut produire une différence d’un cent avec deux lignes.
@@ -21,7 +21,7 @@ export function computeOrder(event, platform, screens, montage = 'none', now = D
   const subtotalCents = rental.totalCents + montageCents;
   return {
     eventId: event.id, screens, phase: rental.phase, montage,
-    rentalCents: rental.totalCents, rentalUnitCents: rental.unitCents, montageCents,
+    rentalCents: rental.totalCents, rentalUnitCents: rental.unitCents, montageCents, montageHours: montageHours(platform, montage),
     subtotalCents, gstCents, qstCents, taxCents: gstCents + qstCents,
     totalCents: subtotalCents + gstCents + qstCents, currency: platform.currency,
   };

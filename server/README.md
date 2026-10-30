@@ -6,15 +6,19 @@ Les événements utilisent tous ces mêmes fonctions Netlify. Aucun serveur à d
 |---|---|---|
 | `GET /api/stock?event=chaucase-2027` | Identifiant d’événement | Disponibilité du parc commun sur sa période de location |
 | `POST /api/quote` | `{ "eventId": "chaucase-2027", "screens": 3, "montage": "simple" }` | Récapitulatif et taxes vérifiées, sans création de session ni blocage |
-| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "montage": "simple", "language": "en", "expectedTotalCents": 211554 }` | Une session Stripe avec écrans et montage; tous les prix recalculés |
+| `POST /api/checkout` | `{ "eventId": "chaucase-2027", "screens": 3, "montage": "simple", "language": "en", "expectedTotalCents": 205805 }` | Une session Stripe avec écrans et montage; tous les prix recalculés |
 | `GET /api/reservation?event=...&session_id=...` | Événement + session Stripe | Vérification du paiement; récapitulatif sans donnée personnelle |
 | `POST /api/stripe-webhook` | Événement signé Stripe | Notification de paiement confirmé, événement identifié par métadonnées |
 
 Les événements inconnus ou inactifs sont refusés. Les réservations ferment à `bookingClosesAt`, sinon au début de mise à disposition du matériel. Le client n’envoie pas de prix ni de dates faisant autorité. `language` est facultatif (français par défaut), limité à `fr` / `en` et conservé dans les métadonnées et les URLs de retour. Seuls les libellés et la locale Checkout changent, jamais le prix ou le stock.
 
-`montage` est facultatif (`none` par défaut), strictement limité à `none`, `simple`, `animated`. Le supplément pour plusieurs écrans n’est ajouté qu’une fois. Les métadonnées `montage`, `montage_cents`, `rental_cents` figent le choix et les prix payés; seul `screens` consomme du stock.
+`montage` est facultatif (`none` par défaut), strictement limité à `none`, `simple`, `animated`. Les forfaits sont fixes : création graphique 200 $ / 4 h, motion design 400 $ / 10 h, sans supplément par écran. Les métadonnées `montage`, `montage_cents`, `rental_cents`, `montage_hours` figent le choix payé; seul `screens` consomme du stock.
 
 `expectedTotalCents`, facultatif pour compatibilité, est envoyé par la modale : un écart renvoie HTTP 409 `quote_changed` **sans créer de session**. Le montant Stripe créé est aussi comparé au total calculé; en cas d’écart la session est expirée et aucune redirection n’est renvoyée. `totalCents` dans les réponses quote/checkout comprend les taxes; `subtotalCents` les exclut.
+
+Checkout collecte le nom complet via `name_collection.individual`, en plus du courriel et du téléphone. Le nom n’est pas ajouté à l’API publique de confirmation. Le co-branding utilise `branding_settings` par session; une ligne logistique à 0 $ affiche les prestations offertes sans fausse réduction.
+
+La confirmation retourne aussi `rentalCents`, `gstCents`, `qstCents` et `includedLogistics`. Les taxes séparées viennent de `total_details.breakdown` de Stripe, avec identifiants de taux figés; si cette ventilation manque ou n’est pas identifiable, les deux valeurs sont `null` et l’interface affiche la taxe globale. Les anciennes réservations ne sont jamais recalculées au tarif actuel.
 
 ## Configuration unique
 

@@ -40,15 +40,26 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
     if (body.expectedTotalCents !== undefined && body.expectedTotalCents !== price.totalCents) return json({ error: 'quote_changed', ...price }, 409);
     const displayEvent = { ...event, name: event.translations?.[language]?.name || event.name };
     const labels = eventLabels(displayEvent, catalog.platform, language);
-    const page = `${siteUrl(req)}/evenement.html?event=${encodeURIComponent(event.id)}`;
+    const origin = siteUrl(req);
+    const page = `${origin}/evenement.html?event=${encodeURIComponent(event.id)}`;
+    const checkoutLogo = event.checkoutLogo || catalog.platform.brand.checkoutLogo;
+    const branding = {
+      display_name: `${catalog.platform.brand.checkoutName || catalog.platform.name} × ${labels.fullName}`,
+      button_color: '#2563eb', border_style: 'rounded',
+      // Stripe doit pouvoir charger le logo : pas d’URL localhost inaccessible.
+      ...(checkoutLogo && origin.startsWith('https:') ? {logo:{type:'url',url:new URL(checkoutLogo,origin).href}} : {}),
+    };
     const metadata = {
       inventory_pool: INVENTORY_POOL, event: event.id, event_name: labels.fullName,
       screens: String(screens), phase: price.phase, language,
-      montage, montage_cents: String(price.montageCents), rental_cents: String(price.rentalCents),
+      montage, montage_cents: String(price.montageCents), rental_cents: String(price.rentalCents), montage_hours: String(price.montageHours),
+      gst_tax_rate: taxRates[0], qst_tax_rate: taxRates[1], logistics_included: 'true',
       rental_start: event.dates.rentalStartsAt, rental_end: event.dates.rentalEndsAt,
     };
     session = await stripe.checkout.sessions.create({
       mode: 'payment', locale: ui.stripeLocale, // Moyens de paiement configurés dans Stripe Dashboard.
+      branding_settings: branding,
+      name_collection: { individual: { enabled: true, optional: false } },
       line_items: [{
         quantity: screens >= 3 ? screens : 1,
         tax_rates: taxRates,
@@ -66,9 +77,13 @@ export const makeHandler = (stripeFactory = getStripe, now = Date.now) => async 
         price_data: {
           currency: catalog.platform.currency,
           unit_amount: price.montageCents,
-          product_data: { name: ui.montageLabel(montage), description: ui.montageDescription(montage) },
+          product_data: { name: ui.montageLabel(montage), description: ui.montageDescription(montage, price.montageHours) },
         },
-      }] : [])],
+      }] : []), {
+        quantity: 1,
+        price_data: { currency: catalog.platform.currency, unit_amount: 0,
+          product_data: { name: ui.logisticsOrderTitle, description: ui.logisticsOrderDescription(labels.fullName) } },
+      }],
       billing_address_collection: 'required',
       phone_number_collection: { enabled: true },
       custom_fields: [

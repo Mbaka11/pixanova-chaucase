@@ -14,7 +14,9 @@ Une plateforme réutilisable pour les salons : l’exposant choisit son événem
 - Français par défaut; anglais disponible via FR / EN et `?lang=en`. Interface, dates, prix, FAQ, consentement, animation SVG et libellés Checkout traduits. Les vidéos gardent leur audio d’origine, avec une mention sur la page anglaise.
 - Paiement : session Stripe Checkout calculée côté serveur, pas de douze liens.
 - Montage graphique facultatif **avant Stripe**, dans une modale récapitulative FR/EN. Sans montage par défaut; écrans et montage payés ensemble, aucune vente additionnelle après paiement.
-- Montage simple : 150 $ pour 1 écran / 250 $ dès 2; animé : 350 $ / 450 $, avant taxes. Tarifs communs configurés dans `config/platform.json`.
+- Création graphique : **200 $ / 4 h incluses**; motion design : **400 $ / 10 h incluses**, avant taxes, quel que soit le nombre d’écrans. Aucun supplément dès 2 écrans ni taux horaire affiché. Tarifs et heures dans `config/platform.json`.
+- Parcours simplifié : accueil nom/date, modale sans jargon (« Continuer vers le paiement »), confirmation centrée avec reçu structuré et trois étapes.
+- Stripe : nom complet du contact requis en plus du courriel/téléphone, co-branding Pixanova × événement, ligne livraison/installation à 0 $ (« offertes »), sans prix barré inventé.
 
 ## Inventaire commun selon les dates
 
@@ -57,7 +59,8 @@ Maximum de 10 écrans par commande actuellement configuré. TPS 5 % et TVQ 9,975
 - Webhook local configuré avec Stripe CLI; secret dans `.env`, jamais affiché ni versionné. Paiement test reçu et signature vérifiée (HTTP 200); absence de signature refusée (HTTP 400).
 - Boutons de paiement branchés sans changer les trois fiches. Page « Merci » vérifiée côté serveur avec `/api/reservation`; `merci=1` seul ne confirme rien.
 - Paiement test FR de 688,70 $ réussi puis intégralement remboursé; refus de carte EN et expiration testés, stock final 20 / 20. Aucun achat réel.
-- Montage avant paiement vérifié : 9 combinaisons réelles de sessions Stripe test (1/2/3 écrans × sans/simple/animé), montants et arrondis identiques au récapitulatif. Paiement combiné EN de 1 546,42 $ réussi puis intégralement remboursé; réservations préexistantes conservées.
+- Montage avant paiement vérifié : 9 combinaisons réelles de sessions Stripe test (1/2/3 écrans × sans/simple/animé), montants et arrondis identiques au récapitulatif. Après mise à jour des forfaits, paiement combiné EN de **1 488,93 $** (2 écrans + création à 200 $) réussi puis intégralement remboursé; réservations préexistantes conservées. Les anciennes commandes restent affichées à leur prix payé, jamais recalculées au nouveau tarif.
+- La confirmation utilise la ventilation fiscale Stripe pour les lignes TPS/TVQ; à défaut, elle conserve la taxe globale au lieu d’inventer une ventilation. Aucun nom, courriel ni téléphone n’est exposé par l’API de confirmation.
 - Le récapitulatif consulte `/api/quote` sans bloquer d’écrans. Le Checkout recalcule les prix, refuse un total accepté devenu périmé et vérifie le montant effectivement créé dans Stripe.
 - Notifications Resend désactivées durant les essais, déduplication durable encore à faire. Voir [STRIPE-LOCAL.md](STRIPE-LOCAL.md) pour les résultats et les limites.
 

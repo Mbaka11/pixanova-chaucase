@@ -48,6 +48,17 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [ ] Tests supplémentaires : 3-D Secure, stock atomique concurrent, reprises réseau et paiements différés.
 - Résultats et commandes : [STRIPE-LOCAL.md](STRIPE-LOCAL.md).
 
+## Retours de la démonstration
+
+- [x] Accueil compact : nom et dates, sans explications commerciales superflues.
+- [x] Modale FR/EN allégée : bouton « Continuer vers le paiement », aucun message technique ni supplément.
+- [x] Création graphique 200 $ / 4 h et motion design 400 $ / 10 h, sans variation par quantité; descriptions et FAQ coordonnées.
+- [x] Collecte native du nom complet et identité Pixanova × événement dans Stripe.
+- [x] Livraison/installation offertes : ligne Stripe à 0 $, badges dans le résumé, aucun prix barré inventé.
+- [x] Confirmation centrée, reçu structuré avec TPS/TVQ réellement payées, trois étapes et aucun faux check pour un impayé.
+- [x] Anciennes factures conservées à leur prix payé; tests FR/EN sur ordinateur et mobile.
+- [ ] Régler le fuseau d’affichage du Dashboard Stripe dans les paramètres du compte (action propriétaire, pas une modification des timestamps API).
+
 ## 4. Validation métier et mise en ligne
 
 - [ ] Valider avec Anis les marges de transport/retour de ChauCase (période actuellement provisoire).

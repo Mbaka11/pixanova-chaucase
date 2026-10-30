@@ -14,8 +14,11 @@ export function validateCatalog(input) {
   assert(Number.isSafeInteger(platform.inventory?.totalScreens) && platform.inventory.totalScreens > 0, 'Inventaire invalide');
   assert(Number.isInteger(platform.inventory?.holdMinutes) && platform.inventory.holdMinutes >= 30 && platform.inventory.holdMinutes <= 1440, 'Blocage Stripe : 30 à 1440 minutes');
   assert(publicAsset(platform.brand?.logo), 'Logo Pixanova invalide');
+  if (platform.brand.checkoutLogo) assert(publicAsset(platform.brand.checkoutLogo), 'Logo Checkout invalide');
   for (const key of ['valueCents', 'widthCm', 'widthPx', 'heightPx']) assert(cents(platform.screen?.[key]), `Écran : ${key} invalide`);
-  for (const key of ['simpleCents', 'animatedCents', 'multipleScreensExtraCents']) assert(cents(platform.montage?.[key]), `Montage : ${key} invalide`);
+  for (const key of ['simpleCents', 'animatedCents']) assert(cents(platform.montage?.[key]), `Montage : ${key} invalide`);
+  assert(platform.montage?.multipleScreensExtraCents === 0, 'Les forfaits de création n’ont pas de supplément par écran');
+  for (const key of ['simpleHours', 'animatedHours']) assert(Number.isSafeInteger(platform.montage?.[key]) && platform.montage[key] > 0, `Montage : ${key} invalide`);
   for (const key of ['gstPercent', 'qstPercent']) assert(typeof platform.taxes?.[key] === 'number' && platform.taxes[key] > 0 && platform.taxes[key] < 100 && Number.isInteger(platform.taxes[key] * 1000), `Taxe ${key} invalide`);
   assert(Array.isArray(events), 'Liste des événements requise');
   const ids = new Set();
@@ -24,6 +27,7 @@ export function validateCatalog(input) {
     ids.add(event.id);
     assert(typeof event.active === 'boolean' && event.name && event.edition && event.city, 'Identité événement incomplète');
     assert(publicAsset(event.logo), `Logo invalide : ${event.id}`);
+    if (event.checkoutLogo) assert(publicAsset(event.checkoutLogo), `Logo Checkout invalide : ${event.id}`);
     assert(Number.isInteger(event.maxScreensPerOrder) && event.maxScreensPerOrder >= 3 && event.maxScreensPerOrder <= platform.inventory.totalScreens, 'Maximum de commande invalide');
     const d = event.dates;
     for (const key of ['startsOn', 'endsOn', 'installationOn', 'artworkDueOn']) assert(dateOnly(d?.[key]), `Date ${key} invalide : ${event.id}`);

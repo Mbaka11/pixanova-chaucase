@@ -2,6 +2,7 @@
 import catalog from './catalog-data.js';
 import { eventLabels, bookingIsOpen } from './events-shared.js';
 import { copy, money as formatMoney } from './i18n.mjs';
+import { montageHours } from './montage.mjs';
 import { language, homeUrl, localizeEvent, translateStaticDOM, installLanguageSwitcher } from './language.js';
 const ui = copy(language);
 translateStaticDOM();
@@ -34,9 +35,15 @@ if (!event) {
     '[data-artwork-date]': labels.artworkDeadline, '[data-artwork-date-full]': labels.artworkDeadlineFull,
     '[data-installation-date]': labels.installation, '[data-start-date]': labels.starts,
     '[data-screen-value]': money(platform.screen.valueCents),
-    '[data-montage-simple]': ui.from(money(platform.montage.simpleCents)),
-    '[data-montage-animated]': ui.from(money(platform.montage.animatedCents)),
-    '#montageBookingNote': ui.montageBefore+' '+ui.montageSurcharge(money(platform.montage.multipleScreensExtraCents)),
+    '[data-montage-simple]': money(platform.montage.simpleCents),
+    '[data-montage-animated]': money(platform.montage.animatedCents),
+    '[data-montage-simple-title]': ui.montageLabel('simple'),
+    '[data-montage-animated-title]': ui.montageLabel('animated'),
+    '[data-montage-simple-description]': ui.montageDescription('simple', montageHours(platform, 'simple')),
+    '[data-montage-animated-description]': ui.montageDescription('animated', montageHours(platform, 'animated')),
+    '[data-montage-simple-example]': ui.montageExample('simple'),
+    '[data-montage-animated-example]': ui.montageExample('animated'),
+    '[data-montage-scope]': ui.montageScope(montageHours(platform, 'simple'), montageHours(platform, 'animated')),
     '[data-contact-phone]': platform.contact.phone,
     '#twoScreenValue': money(platform.screen.valueCents * 2),
     '#eventDates': `${labels.fullName} · ${event.city} · ${labels.period}`,
