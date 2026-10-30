@@ -60,6 +60,15 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Anciennes factures conservées à leur prix payé; tests FR/EN sur ordinateur et mobile.
 - [ ] Régler le fuseau d’affichage du Dashboard Stripe dans les paramètres du compte (action propriétaire, pas une modification des timestamps API).
 
+## Refonte de la page de vente (revue GPT-6.1 Sol / Opus 5.5)
+
+- [x] Ordre : vidéo explicative, offres sur fond clair, preuves, étapes, création de contenu, FAQ, rappel final.
+- [x] Offres empilées sur mobile; prix par écran discret; alimentation 5 A / 10 A, puis « Selon le kiosque » dès 3 écrans.
+- [x] Section création : CNC (graphique) et MAclinique (motion, extrait de 1 min 31 de la boucle V3) avec crédits en pied de page.
+- [x] FAQ réduite à 7 questions; liens vers le site Pixanova; comparatif « affiche traditionnelle » retiré.
+- [ ] Confirmer l’autorisation de diffuser les extraits CNC et MAclinique publiquement (le « 1 595 $ » de CNC est son propre prix).
+- [ ] Sous-titres ou transcription des vidéos.
+
 ## 4. Validation métier et mise en ligne
 
 - [ ] Valider avec Anis les marges de transport/retour de ChauCase (période actuellement provisoire).

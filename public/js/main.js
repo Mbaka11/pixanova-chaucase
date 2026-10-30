@@ -69,6 +69,9 @@ window.addEventListener('hashchange',route);
 function renderOffers(left, early){
   const card = (n, count) => {
     const now = priceFor(count, S.phase), was = priceFor(count, 'reg'), save = was - priceFor(count, 'early');
+    const unit = document.querySelector('[data-p="'+n+'"]').parentElement.querySelector('.unit');
+    const days = ui.en ? LABELS.durationDays+' days' : LABELS.durationDays+' jours';
+    unit.textContent = (count>1 ? fm0(now/count)+(ui.en?'/screen':'/écran')+' · ' : '')+days+(ui.en?' · before taxes':' · avant taxes');
     document.querySelector('[data-p="'+n+'"]').textContent = fm0(now);
     const w = document.querySelector('[data-w="'+n+'"]'); w.textContent = fm0(was); w.style.display = early ? '' : 'none';
     const sv = document.querySelector('[data-s="'+n+'"]'); sv.style.display = early ? '' : 'none';
@@ -96,10 +99,9 @@ function renderOffers(left, early){
   document.getElementById('o3Width').textContent = ui.width(n, cm);
   document.getElementById('o3Visual').textContent = ui.visual(n, n*SCREEN_PX, SCREEN_HEIGHT);
   // Intensité : 17 à 20 A pour 3 écrans, proportionnel au-delà (à confirmer avec Anis)
-  const lo = Math.ceil(n*17/3), hi = Math.ceil(n*20/3);
-  document.getElementById('o3Amp').textContent = ui.amps(lo, hi);
+  document.getElementById('o3Amp').textContent = ui.en?'Depends on your booth':'Selon le kiosque';
   const note = document.getElementById('o3AmpNote');
-  note.hidden = n < 4; note.textContent = ui.powerNote;
+  note.hidden = true;
   document.getElementById('o3Badge').textContent = ui.badge(n);
 }
 document.getElementById('o3Minus').addEventListener('click',()=>{ o3.n--; renderAll(); track('screens_change',{screens:o3.n}); });
@@ -118,8 +120,6 @@ function renderAll(){
    : ui.regularBanner(fm0(P[1].reg));
   if(!S.open) b.textContent=ui.closedFor(LABELS.fullName);
   renderOffers(left, early);
-  document.querySelector('[data-big]').innerHTML=fm0(P[1][S.phase])+(early?' <s>'+fm0(P[1].reg)+'</s>':'');
-  document.querySelector('[data-punch]').innerHTML=ui.punch(fm0(P[1][S.phase]-35000),fm0(SCREEN_VALUE),LABELS.durationDays);
   document.getElementById('pbNow').textContent=fm0(P[1][S.phase]);
   const pw=document.getElementById('pbWas'), ps=document.getElementById('pbSave');
   pw.style.display=ps.style.display=early?'':'none';
@@ -198,7 +198,7 @@ function stkUpdate(){
 }
 window.addEventListener('scroll',stkUpdate,{passive:true});
 setInterval(stkUpdate,300);
-const JS=['s-offre','comment','offres','pourquoi','montage','preuves','faq','final'].map((id,i)=>[id,ui.journey[i]]);
+const JS=['s-offre','video','offres','preuves','comment','montage','faq','final'].map((id,i)=>[id,ui.journey[i]]);
 let jCurIdx=-1;
 function jGo(i){ const el=document.getElementById(JS[i][0]); if(!el) return; closeJ();
   if(i===0) window.scrollTo({top:0,behavior:'smooth'}); else el.scrollIntoView({behavior:'smooth',block:'start'}); }

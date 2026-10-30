@@ -1,0 +1,21 @@
+ATTRIBUTION CARTOGRAPHIQUE — RÉSEAU MACLINIQUE
+
+Données hydrographiques, géographiques et points d’adresse : Gouvernement du Québec — Ministère des Ressources naturelles et des Forêts, Direction générale de l’information géospatiale ; Ministère de l’Environnement, de la Lutte contre les changements climatiques, de la Faune et des Parcs, Direction de l’expertise en biodiversité ; Ressources naturelles Canada / CCCOT pour les contributions indiquées à laGRHQ.
+
+Sources :
+GRHQ — Géobase du réseau hydrographique du Québec
+https://www.donneesquebec.ca/recherche/dataset/grhq
+BDGA1M — Base de données géographiques et administratives
+https://www.donneesquebec.ca/recherche/dataset/base-de-donnees-geographiques-et-administratives
+RQA — Référentiel québécois des adresses
+https://www.donneesquebec.ca/recherche/dataset/referentiel-quebecois-des-adresses
+
+Données distribuées via DonnéesQuébec sous Creative Commons Attribution4.0 International (CC BY4.0) :
+https://creativecommons.org/licenses/by/4.0/
+https://creativecommons.org/licenses/by/4.0/deed.fr
+
+Sélection, projectionEPSG:3857, généralisation/simplification, découpage et élargissement des emprises, palette et adaptation graphique par Pixanova pour Réseau MAclinique. Les organismes producteurs n’approuvent ni ne commanditent ce film.
+
+Les15 placements présentés ont été approuvés par le client le27/09/2026. Il ne s’agit pas d’un relevé terrain ni d’un outil de navigation. Quartier-Central reste qualifié « Ouverture prévue en2028 ».
+
+Le crédit n’est pas affiché à l’écran conformément au choix utilisateur. Conserver cette notice avec les fichiers et prévoir une attribution conforme, accessible et adaptée au contexte de diffusion/distribution.

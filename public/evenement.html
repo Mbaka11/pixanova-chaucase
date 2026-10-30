@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,700;0,800;0,900;1,800;1,900&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
 <noscript><style>.event-loading body{visibility:visible}body > :not(noscript){display:none!important}</style>Activez JavaScript pour sélectionner votre événement. <a href="/">Retour aux événements</a></noscript>
@@ -246,29 +247,12 @@
     </div>
   </div>
 </section>
-
-<section class="s" id="comment">
-  <div class="wrap">
-    <div class="head center">
-      <h2>Comment ça marche</h2>
-      <p class="lead">Le même chemin pour tous les kiosques, petits ou grands.</p>
-    </div>
-    <div class="flow" id="flow">
-      <div class="fl"><i></i></div>
-      <div class="fs"><div class="fn">1</div><h3>Réservez</h3><p>3 minutes en ligne, prix bloqué.</p><span class="when">Aujourd'hui</span></div>
-      <div class="fs"><div class="fn">2</div><h3>Envoyez vos visuels</h3><p>Ou notre infographiste les crée.</p><span class="when">Avant le <span data-artwork-date></span></span></div>
-      <div class="fs"><div class="fn">3</div><h3>On installe</h3><p>Livré, installé, testé.</p><span class="when" data-installation-date></span></div>
-    </div>
-    <div class="center" style="margin-top:36px"><a class="btn dark" href="#offres" data-cta>Réserver mon écran</a></div>
-  </div>
-</section>
-
-<section class="s dark" id="offres">
+<section class="s light pricing" id="offres">
   <div class="wrap">
     <div class="head center">
       <div class="eyebrow">Les offres</div>
-      <h2><span data-screen-value></span> d'équipement, au prix exclusif <span data-event-name></span></h2>
-      <p class="lead">Tout est inclus. Pas de frais cachés.</p>
+      <h2>Choisissez vos écrans</h2>
+      <p class="lead">Location pour tout le salon, avant taxes. Création de contenu en option.</p>
     </div>
     <div class="offers" style="color:var(--ink)">
       <div class="offer">
@@ -316,68 +300,22 @@
           <li id="o3Width">Trois écrans côte à côte : 288 cm, tout le mur du kiosque</li>
           <li id="o3Visual">Un visuel panoramique de 1548 x 1032 px, ou trois messages</li>
         </ul>
-        <div class="amp"><span>Alimentation</span><b id="o3Amp">120 V · 17 à 20 A</b><small id="o3AmpNote" hidden></small></div>
+        <div class="amp"><span>Alimentation</span><b id="o3Amp">Selon le kiosque</b><small id="o3AmpNote" hidden></small></div>
         <a class="btn block" href="#" data-b="3" data-pack="3" id="o3Btn">Réserver 3 écrans</a>
       </div>
     </div>
     <p class="swipe-h">Glissez pour comparer les 3 offres &rsaquo;</p>
   </div>
 </section>
-
-<section class="s" id="pourquoi">
-  <div class="wrap narrow">
-    <div class="head center">
-      <div class="eyebrow" style="color:#1D4FC4">Pourquoi un écran</div>
-      <h2>Une affiche fixe ou un écran qui bouge?</h2>
-    </div>
-    <div class="vs">
-      <div class="col">
-        <h3>Affiche traditionnelle</h3>
-        <div class="big">350 $</div>
-        <div class="avg">Prix moyen d'une affiche fixe</div>
-        <ul><li>Un visuel figé, toujours le même</li><li>Aucune animation, aucune vidéo</li><li>Impossible à modifier une fois imprimée</li><li>Une surface parmi des dizaines dans l'allée</li></ul>
-      </div>
-      <div class="col led-col">
-        <h3>Écran LED Pixanova</h3>
-        <div class="big" data-big></div>
-        <ul><li>Plusieurs visuels et vidéos en boucle</li><li>Lumineux, visible de loin dans l'allée</li><li>Visuels modifiables jusqu'à la date limite</li><li>Livré, installé et retiré par nos équipes</li></ul>
-      </div>
-    </div>
-    <p class="punch" data-punch></p>
-  </div>
-</section>
-
-<section class="s white" id="montage">
-  <div class="wrap">
-    <div class="head center">
-      <div class="eyebrow" style="color:#1D4FC4">Pas de visuels prêts?</div>
-      <h2>Notre infographiste s'en occupe</h2>
-      <p class="lead">Vous nous donnez votre logo et vos idées. Nous livrons un montage prêt à jouer sur l'écran.</p>
-    </div>
-    <div class="montage">
-      <div class="mont">
-        <h3 data-montage-simple-title></h3>
-        <div class="p"><span data-montage-simple></span> <small>avant taxes</small></div>
-        <p data-montage-simple-description></p>
-      </div>
-      <div class="mont">
-        <h3 data-montage-animated-title></h3>
-        <div class="p"><span data-montage-animated></span> <small>avant taxes</small></div>
-        <p data-montage-animated-description></p>
-      </div>
-    </div>
-    <div class="free">Vous avez déjà vos fichiers? <b>Envoyez-les gratuitement</b> en JPEG, PNG ou MP4 (516 x 1032 px).</div>
-  </div>
-</section>
-
 <section class="s" id="preuves">
   <div class="wrap">
     <div class="head center">
       <div class="eyebrow" style="color:#1D4FC4">Déjà vus en action</div>
       <h2>Nos écrans ont déjà fait leurs preuves</h2>
       <p class="lead">Des kiosques comme le vôtre, dans de vrais salons au Québec.</p>
+<a class="rate" href="https://share.google/P9EkXc5XlJibZzkjX" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> <b>5,0</b> · 29 avis Google</a>
     </div>
-    <p class="lg-t">Ils ont déjà exposé avec Pixanova</p>
+    <p class="lg-t">Ils nous ont fait confiance</p>
     <div class="lg"><img src="assets/logos/videotron.png" alt="Centre Vidéotron" loading="lazy"><img src="assets/logos/bell.png" alt="Bell" loading="lazy"><img src="assets/logos/palais-des-congres.png" alt="Palais des congrès de Montréal" loading="lazy"><img src="assets/logos/cycle-neron.png" alt="Cycle Neron" loading="lazy"><img src="assets/logos/air-medic.png" alt="Air Medic" loading="lazy"><img src="assets/logos/royal-air-maroc.png" alt="Royal Air Maroc" loading="lazy"><img src="assets/logos/montreal.png" alt="Ville de Montréal" loading="lazy"><img src="assets/logos/expocite.png" alt="ExpoCité" loading="lazy"><span class="more">et 50+ autres</span></div>
 
     <div class="snap gal">
@@ -388,7 +326,7 @@
 
     <div class="tem-h">
       <h3>Témoignages</h3>
-      <a class="rate" href="https://share.google/P9EkXc5XlJibZzkjX" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> <b>5,0</b> · 29 avis Google</a>
+
     </div>
     <div class="snap tems">
       <figure><div class="vf"><video controls playsinline preload="metadata" src="assets/videos/temoignages/eric-sem.mp4#t=0.1"></video></div><figcaption><b>Éric</b>Président, SEM Solutions<span>Salon de l'agriculture de Québec</span></figcaption></figure>
@@ -398,29 +336,52 @@
     <blockquote class="quote-t">« Le roll-up électronique capte immédiatement l'attention grâce à l'animation et nous aide à attirer des prospects de meilleure qualité lors des salons et expositions. »<cite>Éric, président, SEM Solutions</cite></blockquote>
   </div>
 </section>
-
-<section class="s white" id="faq">
-  <div class="wrap narrow">
-    <div class="head center"><div class="eyebrow" style="color:#1D4FC4">Questions fréquentes</div><h2>Tout ce que vous voulez savoir avant de réserver</h2></div>
-    <details><summary>Qu'est-ce qui est inclus dans le prix?</summary><p>Tout : la livraison et l'installation le <span data-installation-date></span>, la réception et le test de vos visuels sur l'écran, la clé USB préchargée, la ligne d'assistance pendant le salon et la désinstallation. Seules les taxes (TPS et TVQ) s'ajoutent.</p></details>
-    <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Pas du tout. Choisissez un forfait de création dans le récapitulatif avant le paiement. Notre équipe prépare des visuels sur mesure pour votre marque.</p></details>
-    <details id="creation-faq"><summary>Quelle différence entre création graphique et motion design?</summary><div class="creation-faq">
-      <p><strong data-montage-simple-title></strong><span data-montage-simple-example></span></p>
-      <p><strong data-montage-animated-title></strong><span data-montage-animated-example></span></p>
-      <a href="#preuves">Voir des réalisations Pixanova</a>
-    </div></details>
-    <details><summary>Que comprennent les forfaits de création?</summary><p data-montage-scope></p></details>
-    <details><summary>Combien d'écrans pour un kiosque 10 x 10?</summary><p>Trois écrans côte à côte couvrent 288 cm, soit presque toute la largeur d'un kiosque de 10 pieds. C'est le choix de beaucoup d'exposants. Si vous voulez plus de trois écrans, utilisez le compteur de la troisième fiche : le prix par écran reste le même.</p></details>
-    <details><summary>Quel format de fichiers dois-je envoyer?</summary><p>JPEG, PNG ou MP4. Pour un écran : 516 x 1032 px. Pour deux écrans côte à côte : 1032 x 1032 px. Pour trois : 1548 x 1032 px. Nous validons chaque fichier sur l'écran avant le salon.</p></details>
-    <details><summary>Jusqu'à quand puis-je envoyer mes visuels?</summary><p>Jusqu'au <span data-artwork-date-full></span>. Après votre paiement, nous vous écrivons pour récupérer vos visuels, puis nous vous envoyons des rappels.</p></details>
-    <details><summary>De quoi mon kiosque a-t-il besoin?</summary><p>Une prise standard de 120 V : 5 A pour 1 écran, 10 A pour 2, 17 à 20 A pour 3 (selon qu'un ordinateur soit branché ou non). L'écran est autoportant sur roues, rien à fixer.</p></details>
-    <details><summary>Puis-je annuler?</summary><p>Oui. Remboursement complet jusqu'au <span data-refund-date-full></span>. Après cette date, la réservation n'est plus remboursable.</p></details>
-    <details><summary>Comment puis-je payer?</summary><p>Par carte de crédit, de façon sécurisée, avec Stripe. Les taxes (TPS et TVQ) s'ajoutent au moment du paiement. Pour payer par virement Interac, écrivez-nous à info@pixanova.ca.</p></details>
-    <details><summary>Que se passe-t-il quand il n'y a plus d'écrans?</summary><p>Notre parc commun comprend <span data-total-screens></span> écrans, partagés entre les événements selon leurs dates. Quand ils sont tous réservés, vous pouvez vous inscrire à la liste d'attente. Si un écran se libère, vous êtes avisé en premier.</p></details>
-    <details><summary>Pourquoi le prix est-il réservé aux exposants?</summary><p>Pixanova est le fournisseur officiel d'écrans LED de <span data-event-full-name></span>. Ce tarif est exclusif aux exposants du salon. Nous vérifions votre numéro de kiosque après la réservation.</p></details>
+<section class="s" id="comment">
+  <div class="wrap">
+    <div class="head center">
+      <h2>Comment ça marche</h2>
+      <p class="lead">Le même chemin pour tous les kiosques, petits ou grands.</p>
+    </div>
+    <div class="flow" id="flow">
+      <div class="fl"><i></i></div>
+      <div class="fs"><div class="fn">1</div><h3>Réservez</h3><p>3 minutes en ligne, prix bloqué.</p><span class="when">Aujourd'hui</span></div>
+      <div class="fs"><div class="fn">2</div><h3>Envoyez vos visuels</h3><p>Ou notre infographiste les crée.</p><span class="when">Avant le <span data-artwork-date></span></span></div>
+      <div class="fs"><div class="fn">3</div><h3>On installe</h3><p>Livré, installé, testé.</p><span class="when" data-installation-date></span></div>
+    </div>
+    <div class="center" style="margin-top:36px"><a class="btn dark" href="#offres" data-cta>Réserver mon écran</a></div>
   </div>
 </section>
-
+<section class="s white" id="montage">
+ <div class="wrap">
+  <div class="head center"><div class="eyebrow" style="color:#1D4FC4">Création de contenu en option</div><h2>Vos visuels sont prêts? Sinon, on s’en occupe.</h2><p class="lead">Deux forfaits, deux niveaux de création. Voici la différence en images.</p></div>
+  <div class="creation-samples">
+   <article class="creation-sample">
+    <div class="sample-heading"><h3 data-montage-simple-title></h3><p class="sample-price"><b data-montage-simple></b><small>avant taxes</small></p></div>
+    <p class="sample-description" data-montage-simple-description></p>
+    <details class="sample-demo" open><summary>Extrait vidéo · CNC</summary><div class="sample-stage"><video class="sample-video" controls playsinline muted loop preload="metadata" poster="assets/videos/exemples/cnc.jpg" src="assets/videos/exemples/cnc.mp4" aria-label="Exemple de création graphique pour CNC"></video></div></details>
+    <div class="sample-caption"><strong>Exemple client · CNC</strong><span>Une offre mise en valeur, une présentation soignée, des transitions simples.</span><a href="assets/videos/exemples/cnc.mp4" target="_blank" rel="noopener">Voir en plus grand</a></div>
+   </article>
+   <article class="creation-sample featured">
+    <div class="sample-heading"><h3 data-montage-animated-title></h3><p class="sample-price"><b data-montage-animated></b><small>avant taxes</small></p></div>
+    <p class="sample-description" data-montage-animated-description></p>
+    <details class="sample-demo" open><summary>Extrait vidéo · MAclinique</summary><div class="sample-stage"><video class="sample-video" controls playsinline muted loop preload="metadata" poster="assets/videos/exemples/maclinique-motion-v3-long.jpg" src="assets/videos/exemples/maclinique-motion-v3-long.mp4" aria-label="Exemple MAclinique : carte Montréal, médecins et animations"></video></div></details>
+    <div class="sample-caption"><strong>Exemple client · Réseau MAclinique</strong><span>Montréal et sa liste récapitulative, les médecins, les animations d’écrans et de textes.</span><a href="assets/videos/exemples/maclinique-motion-v3-long.mp4" target="_blank" rel="noopener">Voir en plus grand</a></div>
+   </article>
+  </div>
+  <div class="free">Vous avez déjà vos fichiers? <b>Envoyez-les gratuitement</b> en JPEG, PNG ou MP4 (516 x 1032 px).</div>
+ </div>
+</section>
+<section class="s white" id="faq"><div class="wrap narrow">
+ <div class="head center"><div class="eyebrow" style="color:#1D4FC4">Questions fréquentes</div><h2>L’essentiel avant de réserver</h2></div>
+ <details><summary>Qu'est-ce qui est inclus dans le prix?</summary><p>La location pour le salon, la livraison, l’installation, la vérification des visuels, l’assistance et la désinstallation. La création de contenu est facultative. Les taxes s’ajoutent.</p></details>
+ <details><summary>Je n'ai pas de visuels. Est-ce un problème?</summary><p>Vous pouvez fournir vos fichiers ou choisir un forfait de création. <a href="#montage">Comparez les deux forfaits et leurs exemples.</a></p></details>
+ <details><summary>Combien d'écrans pour un kiosque 10 x 10?</summary><p>Trois écrans côte à côte couvrent presque toute la largeur d’un kiosque de 10 pieds. Le compteur permet d’ajuster votre réservation de 3 à 10 écrans.</p></details>
+ <details><summary>Quels fichiers envoyer, et quand?</summary><p>JPEG, PNG ou MP4, avant le <span data-artwork-date-full></span>. Nous confirmons avec vous les dimensions selon le nombre d’écrans.</p></details>
+ <details><summary>De quoi mon kiosque a-t-il besoin?</summary><p>Pour 1 ou 2 écrans, l’alimentation est indiquée dans les offres. À partir de 3, les besoins sont validés selon votre kiosque et ses circuits.</p></details>
+ <details><summary>Puis-je annuler?</summary><p>Oui. Remboursement complet jusqu'au <span data-refund-date-full></span>. Après cette date, la réservation n'est plus remboursable.</p></details>
+ <details><summary>Comment puis-je payer?</summary><p>Le paiement est sécurisé par Stripe après vérification du récapitulatif. Pour payer par virement Interac, contactez notre équipe.</p></details>
+ <div class="help-box"><p>Une question avant de réserver?</p><div><a href="tel:+14384910384"><span data-contact-phone></span></a><a data-main-site href="https://www.pixanova.ca/en" target="_blank" rel="noopener">Découvrir les écrans sur Pixanova</a><a data-contact-site href="https://www.pixanova.ca/en/contact" target="_blank" rel="noopener">Contacter l’équipe</a></div></div>
+</div></section>
 <section class="s dark final" id="final" style="padding-top:104px">
   <div class="wrap narrow">
     <div class="eyebrow">Le <span data-start-date></span>, vos concurrents auront une affiche</div>
@@ -429,7 +390,6 @@
     <a class="btn" href="#offres" data-cta>Réserver mon écran</a>
   </div>
 </section>
-
 </main>
 
 <!-- ============ MERCI ============ -->
@@ -482,7 +442,7 @@
 <footer>
   <div class="wrap">
     <div><img data-brand-logo src="assets/images/px-crop-sm.png" alt="Pixanova" style="height:24px;display:block;margin-bottom:8px">Montréal · <a data-brand-website href="https://pixanova.ca/">pixanova.ca</a><br>Fournisseur officiel d'écrans LED de <span data-event-full-name></span></div>
-    <div><a href="#faq">FAQ</a> · <a href="mailto:info@pixanova.ca">Nous joindre</a></div>
+    <div><a href="#faq">FAQ</a> · <a href="mailto:info@pixanova.ca">Nous joindre</a> · <a href="assets/videos/exemples/maclinique-attribution.txt" target="_blank" rel="noopener">Crédits</a></div>
   </div>
 </footer>
 
@@ -498,5 +458,6 @@
 
 
 <script type="module" src="js/config.js"></script>
+<script type="module" src="js/samples.js"></script>
 </body>
 </html>
