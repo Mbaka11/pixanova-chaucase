@@ -21,22 +21,22 @@ export async function verifyConfirmation(config) {
       const wrapper=document.createElement('div');wrapper.className=className;
       const key=document.createElement('dt');key.textContent=label;
       const detail=document.createElement('dd');detail.textContent=value;
-      wrapper.append(key,detail);amounts.append(wrapper);
+      wrapper.append(key,detail);amounts.append(wrapper);return detail;
     };
     root.querySelector('#receiptTitle').textContent=ui.paymentSummary;
     row(ui.screen(data.screens),amount(data.rentalCents));
     if(data.montage==='none')row(ui.montageLegend,ui.montageLabel('none'),'receipt-visuals');
     else row(ui.montageLabel(data.montage),amount(data.montageCents));
     if(data.includedLogistics===true){
-      row(ui.delivery,ui.offeredSingle,'receipt-included');
-      row(ui.installation,ui.offeredSingle,'receipt-included');
+      row(ui.logistics,ui.offered,'receipt-included');
     }
     row(ui.bookingSubtotal,amount(data.subtotalCents),'receipt-subtotal');
     // Compatibilité des anciennes sessions : une taxe globale si Stripe ne ventile pas.
     if(Number.isSafeInteger(data.gstCents)&&data.gstCents>=0&&Number.isSafeInteger(data.qstCents)&&data.qstCents>=0&&data.gstCents+data.qstCents===data.taxCents){
-      row(ui.gst,amount(data.gstCents));row(ui.qst,amount(data.qstCents));
-    }else row(ui.taxesCombined,amount(data.taxCents));
-    row(ui.totalPaid,amount(data.totalCents)+' CAD','receipt-total');
+      row(ui.gst,amount(data.gstCents),'receipt-tax');row(ui.qst,amount(data.qstCents),'receipt-tax');
+    }else row(ui.taxesCombined,amount(data.taxCents),'receipt-tax');
+    const total=row(ui.totalPaid,amount(data.totalCents),'receipt-total');
+    const currency=document.createElement('small');currency.textContent=' CAD';total.append(currency);
     summary.hidden=false;
   }
   document.body.classList.add('confirmation-pending');

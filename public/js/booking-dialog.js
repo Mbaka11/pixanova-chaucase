@@ -38,9 +38,11 @@ export function createBookingDialog(config, { refreshStock, onCheckout } = {}) {
       const included = el('div', 'booking-included');
       included.append(el('dt', '', ui.logistics), el('dd', '', ui.offered)); summary.append(included);
     }
-    const row = el('div', key === 'totalCents' ? 'booking-total' : '');
+    const row = el('div', key === 'totalCents' ? 'booking-total' : ['subtotalCents','gstCents','qstCents'].includes(key) ? 'booking-detail' : '');
     const value = el('dd', '', '—'); value.id = `booking-${key}`;
-    row.append(el('dt', '', label), value); summary.append(row); values[key] = value;
+    const term = el('dt', '', label);
+    if (key === 'totalCents') term.append(el('small', '', ui.taxesIncluded));
+    row.append(term, value); summary.append(row); values[key] = value;
   }
   const status = el('p', 'booking-status'); status.id = 'bookingStatus'; status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
   const retry = el('button', 'booking-retry', ui.quoteRetry); retry.type='button'; retry.hidden=true;

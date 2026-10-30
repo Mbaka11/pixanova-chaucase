@@ -56,6 +56,7 @@ Références : [CONTEXTE.md](CONTEXTE.md), [EVENEMENTS.md](EVENEMENTS.md).
 - [x] Collecte native du nom complet et identité Pixanova × événement dans Stripe.
 - [x] Livraison/installation offertes : ligne Stripe à 0 $, badges dans le résumé, aucun prix barré inventé.
 - [x] Confirmation centrée, reçu structuré avec TPS/TVQ réellement payées, trois étapes et aucun faux check pour un impayé.
+- [x] Hiérarchie de prix allégée dans la modale et le reçu : total dominant, détails et taxes en petit, livraison/installation réunies en une mention discrète.
 - [x] Anciennes factures conservées à leur prix payé; tests FR/EN sur ordinateur et mobile.
 - [ ] Régler le fuseau d’affichage du Dashboard Stripe dans les paramètres du compte (action propriétaire, pas une modification des timestamps API).
 

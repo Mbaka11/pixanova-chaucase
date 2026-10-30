@@ -1037,17 +1037,17 @@ body.nohome #banner{display:none}
 .confirmation-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
 .confirmation-grid .card{margin:0;padding:28px;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px #10234605}
 .confirmation-grid h2{font-size:21px;margin:0 0 8px}.receipt-card[hidden]{display:none!important}
-.receipt-event{font-size:14px;color:var(--muted);margin-bottom:20px}
-#receiptAmounts{margin:0}#receiptAmounts>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;font-size:14px}#receiptAmounts dt{color:var(--muted)}#receiptAmounts dd{margin:0;text-align:right;font-weight:600;white-space:nowrap}
-#receiptAmounts .receipt-included dd{color:#16734d;background:#e8f7ef;padding:3px 8px;border-radius:20px;font-size:12px}
-#receiptAmounts .receipt-subtotal{border-top:1px solid var(--line);margin-top:12px;padding-top:16px}
-#receiptAmounts .receipt-total{border-top:1px solid var(--line);margin-top:12px;padding-top:18px;font-size:18px}#receiptAmounts .receipt-total dt{color:var(--ink);font-weight:800}#receiptAmounts .receipt-total dd{color:#146346;font-weight:800}
+.receipt-event{font-size:12px;color:var(--muted);margin-bottom:14px}
+#receiptAmounts{margin:0}#receiptAmounts>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:5px 0;font-size:13px}#receiptAmounts dt{color:var(--muted)}#receiptAmounts dd{margin:0;text-align:right;font-weight:500;white-space:nowrap}
+#receiptAmounts .receipt-included,#receiptAmounts .receipt-tax,#receiptAmounts .receipt-subtotal{font-size:11.5px;color:var(--muted)}#receiptAmounts .receipt-included dd,#receiptAmounts .receipt-tax dd,#receiptAmounts .receipt-subtotal dd{font-weight:400}
+#receiptAmounts .receipt-subtotal{border-top:1px solid var(--line);margin-top:8px;padding-top:10px}
+#receiptAmounts .receipt-total{border-top:1px solid var(--line);margin-top:10px;padding-top:16px;font-size:24px}#receiptAmounts .receipt-total dt{font-size:16px;color:var(--ink);font-weight:700}#receiptAmounts .receipt-total dd{color:#146346;font-weight:800}#receiptAmounts .receipt-total small{font-size:11px;font-weight:400;color:var(--muted)}
 .confirmation-next .timeline{margin-top:24px}.confirmation-next .timeline li:last-child{padding-bottom:0}
 .confirmation-next .timeline li>div:last-child>span:not(.step-state){display:block;line-height:1.55;margin-top:5px}
 .timeline .step-state{display:inline-block;font-size:11px;font-weight:700;color:var(--blue);background:#eef4ff;border-radius:20px;padding:2px 8px;margin-top:7px}
 .confirmation-contact{text-align:center;margin-top:30px;font-size:13px;color:var(--muted);line-height:1.8}
 .creation-faq strong{display:block;color:var(--ink);margin-bottom:5px}.creation-faq a{font-size:14px;font-weight:700;color:var(--blue);text-decoration:underline}
-@media(max-width:760px){.confirmation-page{padding-top:30px}.confirmation-hero{margin-bottom:24px}.confirmation-grid{grid-template-columns:1fr;gap:18px}.confirmation-grid .card{padding:22px}.confirmation-hero h1{font-size:28px}.confirmation-hero p{font-size:14px}#receiptAmounts .receipt-total{font-size:17px}}
+@media(max-width:760px){.confirmation-page{padding-top:30px}.confirmation-hero{margin-bottom:24px}.confirmation-grid{grid-template-columns:1fr;gap:18px}.confirmation-grid .card{padding:22px}.confirmation-hero h1{font-size:28px}.confirmation-hero p{font-size:14px}#receiptAmounts .receipt-total{font-size:22px}}
 
 /* Récapitulatif et montage facultatif avant l’unique paiement. */
 .booking-dialog{width:min(620px,calc(100% - 28px));max-height:calc(100dvh - 32px);margin:auto;padding:28px;border:0;border-radius:16px;background:#fff;color:var(--ink);box-shadow:0 24px 100px #0005;overflow:auto;overscroll-behavior:contain}
@@ -1063,12 +1063,13 @@ body.nohome #banner{display:none}
 .booking-option>input{width:18px;height:18px;flex-shrink:0;margin:3px 0 0;accent-color:var(--blue)}
 .booking-option-content{display:block;min-width:0;flex:1}.booking-option-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.booking-option-price{white-space:nowrap}
 .booking-option-description{display:block;font-size:12px;line-height:1.45;color:var(--muted);margin-top:4px}
-.booking-summary{border-top:1px solid var(--line);padding-top:12px;margin:18px 0 0}.booking-summary>div{display:flex;justify-content:space-between;gap:16px;padding:5px 0;font-size:14px}.booking-summary dt{color:var(--muted)}.booking-summary dd{margin:0;white-space:nowrap;font-weight:600}
-.booking-summary .booking-included dd{color:#16734d}.booking-summary .booking-total{font-size:19px;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}.booking-total dt{color:var(--ink);font-weight:800}
+.booking-summary{border-top:1px solid var(--line);padding-top:10px;margin:18px 0 0}.booking-summary>div{display:flex;justify-content:space-between;gap:16px;padding:3px 0;font-size:13px}.booking-summary dt{color:var(--muted)}.booking-summary dd{margin:0;white-space:nowrap;font-weight:500}
+.booking-summary .booking-detail,.booking-summary .booking-included{font-size:11.5px;color:var(--muted)}.booking-summary .booking-detail dd,.booking-summary .booking-included dd{font-weight:400}
+.booking-summary .booking-total{align-items:center;font-size:25px;border-top:1px solid var(--line);margin-top:10px;padding-top:14px}.booking-total dt{font-size:17px;color:var(--ink);font-weight:700}.booking-total dt small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}.booking-total dd{font-weight:800}
 .booking-status{font-size:14px;color:#8f381b;margin:12px 0}.booking-status:empty{display:none}.booking-retry{border:0;background:transparent;color:var(--blue);text-decoration:underline;cursor:pointer;font-weight:700}
 .booking-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}.booking-actions .btn{font-size:14px;padding:12px 18px}.booking-dialog button:disabled{opacity:.55;cursor:not-allowed}
 .booking-dialog :focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-@media(max-width:480px){.booking-dialog{padding:20px;max-height:calc(100dvh - 20px)}.booking-header h2{font-size:24px}.booking-actions{flex-direction:column-reverse}.booking-actions .btn{width:100%}.booking-option{padding:12px}.booking-option-top{font-size:14px}.booking-summary .booking-total{font-size:17px}}
+@media(max-width:480px){.booking-dialog{padding:20px;max-height:calc(100dvh - 20px)}.booking-header h2{font-size:24px}.booking-actions{flex-direction:column-reverse}.booking-actions .btn{width:100%}.booking-option{padding:12px}.booking-option-top{font-size:14px}.booking-summary .booking-total{font-size:23px}}
 @media (max-width:600px){
   .o-top{min-height:34px}
   .stepper button{width:30px;height:30px;font-size:18px}.stepper b{font-size:17px;min-width:20px}
